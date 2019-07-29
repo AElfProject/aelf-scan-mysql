@@ -12,6 +12,8 @@ Here is a npm package (aelf-block-scan)[https://www.npmjs.com/package/aelf-block
 `yarn` or `npm i `
 
 * install and configure your `mysql` server on localhost
+* create a database named `aelf_main_chain`
+* run `./db/init_sql.sh` script
 
 ### Development
 
