@@ -1,0 +1,64 @@
+{
+  "name": "aelf-scan-mysql",
+  "version": "1.0.0",
+  "description": "a mysql extension for scan",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "npm run clean && cross-env NODE_ENV=development pm2 start src/index.js --name aelf-scan-mysql",
+    "start": "cross-env NODE_ENV=production pm2 start src/index.js --name aelf-scan-mysqln",
+    "tps:start": "cross-env NODE_ENV=production pm2 start src/tps.js --name aelf-scan-mysql-tps",
+    "tps:stop": "cross-env NODE_ENV=production pm2 stop aelf-scan-mysql-tps",
+    "tps:restart": "cross-env NODE_ENV=production pm2 restart aelf-scan-mysql-tps",
+    "clean": "rimraf ./*.log ",
+    "commit": "git-cz"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atom-yang/aelf-scan-mysql.git"
+  },
+  "author": "Mutong Yang <985777876@qq.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/atom-yang/aelf-scan-mysql/issues"
+  },
+  "homepage": "https://github.com/atom-yang/aelf-scan-mysql#readme",
+  "devDependencies": {
+    "babel-eslint": "^10.0.2",
+    "chalk": "^2.4.2",
+    "commitizen": "^4.0.3",
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb-base": "^13.2.0",
+    "eslint-plugin-babel": "^5.3.0",
+    "eslint-plugin-import": "^2.18.2",
+    "git-cz": "^3.2.1",
+    "husky": "^3.0.1",
+    "jest": "^24.8.0",
+    "lint-staged": "^9.2.0",
+    "rimraf": "^2.6.3"
+  },
+  "dependencies": {
+    "aelf-block-scan": "^0.1.0",
+    "aelf-sdk": "^3.2.11",
+    "ali-rds": "^3.3.0",
+    "cross-env": "^5.2.0",
+    "log4js": "^4.5.1",
+    "long": "^4.0.0",
+    "moment": "^2.24.0",
+    "mysql": "^2.17.1",
+    "pm2": "^3.5.1"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "commit-msg": "node scripts/verify-commit-msg.js"
+    }
+  },
+  "lint-staged": {
+    "*.js": "eslint"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
+}
