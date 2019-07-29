@@ -176,6 +176,7 @@ function cleanup() {
   if (sqlQuery) {
     sqlQuery.close();
   }
+  process.exit();
 }
 
 // do something when app is closing
