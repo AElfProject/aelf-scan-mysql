@@ -13,11 +13,28 @@ module.exports = {
     database: 'aelf_main_chain',
     connectionLimit: 100
   },
+  redis: {
+    connection: {
+      host: '127.0.0.1',
+      port: 6379
+    },
+    keys: {
+      blocksCount: 'blocks_count',
+      blocksUnconfirmedCount: 'blocks_unconfirmed_count',
+      txsCount: 'txs_count',
+      txsUnconfirmedCount: 'txs_unconfirmed_count',
+      resourceCount: 'resource_count',
+      resourceUnconfirmedCount: 'resource_unconfirmed_count',
+      tokenCount: 'token_count',
+      LIBHeight: 'lib_height',
+      bestHeight: 'best_height'
+    }
+  },
   scan: {
     interval: 8000,
     concurrentQueryLimit: 30,
-    host: 'http://18.162.41.20:8000',
-    maxInsert: 100
+    host: 'http://54.169.99.49:8000',
+    maxInsert: 210
   },
   wallet: {
     privateKey: 'f6e512a3c259e5f9af981d7f99d245aa5bc52fe448495e0b0dd56e8406be6f71'

@@ -6,11 +6,12 @@
 const moment = require('moment');
 // eslint-disable-next-line prefer-const
 let { config, TABLE_COLUMNS } = require('./common/constants');
-const { Query } = require('./sql/index');
+const Query = require('./sql/index');
 
 config = config.tps;
 
 const query = new Query(config.sql);
+const CURRENT_TIME = (new Date()).getTime() / 1000;
 
 async function insertTpsBatch(tpsList) {
   const keys = TABLE_COLUMNS.TRANS_PER_SECOND;
@@ -125,15 +126,14 @@ async function getTps(startTimeUnix, endTimeUnix, insertBatch) {
     await getTpsTypeFilter(endTimeUnix);
   } else {
     console.log('into interval, interval seconds: ', config.scanInterval / 1000);
-    setTimeout(() => {
-      getTps(startTimeUnix, endTimeUnix);
+    setTimeout(async () => {
+      await getTps(startTimeUnix, endTimeUnix);
     }, config.scanInterval);
   }
 }
 
 async function getTpsTypeFilter(startTime) {
-  const currentTime = new Date().getTime() / 1000;
-  const currentStartInterval = currentTime - startTime;
+  const currentStartInterval = CURRENT_TIME - startTime;
 
   let endTimeUnix = startTime + config.interval;
   let insertBatch = false;
@@ -142,7 +142,7 @@ async function getTpsTypeFilter(startTime) {
     if (currentStartInterval > config.batchDayInterval) {
       endTimeUnix = startTime + config.batchDayInterval;
     } else {
-      endTimeUnix = currentTime - config.batchLimitTime;
+      endTimeUnix = CURRENT_TIME - config.batchLimitTime;
     }
     insertBatch = true;
   }

@@ -1,4 +1,13 @@
+/**
+ * @file sql
+ * @author atom-yang
+ * @date 2019-07-30
+ */
 const mysql = require('mysql');
+const redis = require('redis');
+const bluebird = require('bluebird');
+const Counter = require('../redis/index');
+const { config } = require('../common/constants');
 const {
   isResourceTransaction,
   isTokenCreatedTransaction
@@ -11,9 +20,50 @@ const {
 } = require('../formatters/index');
 const { TABLE_NAME, TABLE_COLUMNS } = require('../common/constants');
 
+bluebird.promisifyAll(redis.RedisClient.prototype);
+bluebird.promisifyAll(redis.Multi.prototype);
+
 class Query {
   constructor(option) {
     this.pool = mysql.createPool(option);
+    this.redisQuery = null;
+    this.tableKeys = {
+      blocks_0: 'blocksCount',
+      blocks_unconfirmed: 'blocksUnconfirmedCount',
+      transactions_0: 'txsCount',
+      transactions_unconfirmed: 'txsUnconfirmedCount',
+      resource_0: 'resourceCount',
+      resource_unconfirmed: 'resourceUnconfirmedCount',
+      contract_aelf20: 'tokenCount'
+    };
+  }
+
+  async initCounts() {
+    const countsKeys = Object.keys(this.tableKeys);
+    const counts = await this.getCounts(countsKeys);
+    const { keys, connection } = config.redis;
+    const initialCounts = {};
+    counts.forEach((v, i) => {
+      initialCounts[this.tableKeys[countsKeys[i]]] = v;
+    });
+    this.redisQuery = new Counter(redis.createClient(connection), keys, initialCounts);
+    await this.redisQuery.init();
+  }
+
+  async increaseCounts(txsLength, tokenLength, resourceLength) {
+    const { keys } = config.redis;
+    await this.redisQuery.promisifyCommand('incrby', keys.blocksCount, 1);
+    await this.redisQuery.promisifyCommand('incrby', keys.txsCount, txsLength);
+    await this.redisQuery.promisifyCommand('incrby', keys.resourceCount, resourceLength);
+    await this.redisQuery.promisifyCommand('incrby', keys.tokenCount, tokenLength);
+  }
+
+  async setUnconfirmCounts(blocksLength, transactions) {
+    const { keys } = config.redis;
+    const resourceTransactionsLength = transactions.filter(isResourceTransaction).length;
+    await this.redisQuery.promisifyCommand('set', keys.blocksUnconfirmedCount, blocksLength);
+    await this.redisQuery.promisifyCommand('set', keys.txsUnconfirmedCount, transactions.length);
+    await this.redisQuery.promisifyCommand('set', keys.resourceCount, resourceTransactionsLength);
   }
 
   query(sql, values = [], connection = null) {
@@ -27,6 +77,13 @@ class Query {
         resolve(rows);
       });
     });
+  }
+
+  getCounts(keys) {
+    return Promise.all(keys.map(v => {
+      const sql = `select count(*) as count from ${v}`;
+      return this.query(sql, []);
+    })).then(res => res.map(v => v[0].count));
   }
 
   getConnection() {
@@ -55,6 +112,9 @@ class Query {
 
   close() {
     this.pool.end();
+    if (this.redisQuery) {
+      this.redisQuery.end();
+    }
   }
 
   async getMaxHeight() {
@@ -178,6 +238,11 @@ class Query {
 
     const formattedTransactions = transactions.map(v => transactionFormatter(v, block));
 
+    const txsLength = transactions.length;
+    const contractTokenRelatedLength = tokenCreatedTransactions.length;
+    const resourceLength = resourceTransactions.length;
+
+
     try {
       // 目前区分两种交易类型，token create，resource，单独入库，所有类型的交易均入库transactions
       await Promise.all([
@@ -186,7 +251,7 @@ class Query {
         this.insertResourceTransactions(resourceTransactions, isConfirmed, connection),
         this.insertContractToken(tokenCreatedTransactions, isConfirmed, connection)
       ]);
-      connection.commit(err => {
+      connection.commit(async err => {
         if (err) {
           console.log(`error happened when commit ${JSON.stringify(err)}`);
           connection.rollback(() => {
@@ -194,6 +259,12 @@ class Query {
             console.log(`rollback at height ${block.block_height}, confirm status ${isConfirmed}`);
           });
         } else {
+          if (isConfirmed) {
+            await this.increaseCounts(txsLength, contractTokenRelatedLength, resourceLength);
+          } else {
+            // unconfirm
+            // todo: 有可能token transaction 不成功
+          }
           connection.release();
           console.log(`insert successfully at height ${block.block_height}, confirm status ${isConfirmed}`);
         }
@@ -219,6 +290,4 @@ class Query {
   }
 }
 
-module.exports = {
-  Query
-};
+module.exports = Query;
