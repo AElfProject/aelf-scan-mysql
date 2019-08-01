@@ -31,13 +31,13 @@
     "eslint-plugin-babel": "^5.3.0",
     "eslint-plugin-import": "^2.18.2",
     "git-cz": "^3.2.1",
-    "husky": "^3.0.1",
+    "husky": "^3.0.2",
     "jest": "^24.8.0",
     "lint-staged": "^9.2.0",
     "rimraf": "^2.6.3"
   },
   "dependencies": {
-    "aelf-block-scan": "^0.1.0",
+    "aelf-block-scan": "^0.1.5",
     "aelf-sdk": "^3.2.11",
     "ali-rds": "^3.3.0",
     "bluebird": "^3.5.5",

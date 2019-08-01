@@ -3,7 +3,7 @@ A mysql extension for block scanning
 
 Based on [aelf-block-scan](https://github.com/AElfProject/aelf-block-scan)
 
-Here is a npm package (aelf-block-scan)[https://www.npmjs.com/package/aelf-block-scan] which this project is based on. Read the documentations of `aelf-block-scan`.
+Here is a npm package [aelf-block-scan](https://www.npmjs.com/package/aelf-block-scan) which this project is based on. Read the documentations of `aelf-block-scan`.
 
 ## How to start
 

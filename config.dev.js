@@ -56,9 +56,10 @@ module.exports = {
     },
     minutes: 1, // minute
     interval: 60, // s, 秒
-    scanInterval: 55000, // ms
+    scanInterval: 55, // s
     delayTime: 10, // s
     batchLimitTime: 3600, // s
-    batchDayInterval: 24 * 3600 // s
+    batchDayInterval: 24 * 3600, // s
+    maxQuery: 20
   }
 };

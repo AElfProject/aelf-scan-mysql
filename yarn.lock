@@ -581,9 +581,10 @@ acorn@^6.0.1, acorn@^6.0.7:
   version "6.2.1"
   resolved "https://registry.npm.taobao.org/acorn/download/acorn-6.2.1.tgz#3ed8422d6dec09e6121cc7a843ca86a330a86b51"
 
-aelf-block-scan@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.npm.taobao.org/aelf-block-scan/download/aelf-block-scan-0.1.0.tgz#ab8e0bdc330eb5eb89a64125f22c2f5736dbc980"
+aelf-block-scan@^0.1.5:
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/aelf-block-scan/-/aelf-block-scan-0.1.5.tgz#57a02ec84e3d712becf501874cdeb3ed12f6a215"
+  integrity sha512-xuz1fRuwZHAyIvEfFXvpMQ9yiYIwqnAxwZFut75y8qqcFceBwhDZ1s9yXtR5R+cpaIfoJunXScWSzkibLctAdQ==
   dependencies:
     aelf-sdk "^3.2.11"
     cross-env "^5.2.0"
@@ -2496,9 +2497,10 @@ https-proxy-agent@^2.2.1:
     agent-base "^4.3.0"
     debug "^3.1.0"
 
-husky@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.npm.taobao.org/husky/download/husky-3.0.1.tgz#06152c28e129622b05fa09c494209de8cf2dfb59"
+husky@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/husky/-/husky-3.0.2.tgz#e78fd2ae16edca59fc88e56aeb8d70acdcc1c082"
+  integrity sha512-WXCtaME2x0o4PJlKY4ap8BzLA+D0zlvefqAvLCPriOOu+x0dpO5uc5tlB7CY6/0SE2EESmoZsj4jW5D09KrJoA==
   dependencies:
     chalk "^2.4.2"
     cosmiconfig "^5.2.1"

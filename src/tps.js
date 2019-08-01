@@ -4,168 +4,190 @@
  * @date 2019.07.26
  */
 const moment = require('moment');
+const { Scheduler } = require('aelf-block-scan');
 // eslint-disable-next-line prefer-const
-let { config, TABLE_COLUMNS } = require('./common/constants');
+let { config, TABLE_COLUMNS, TABLE_NAME } = require('./common/constants');
 const Query = require('./sql/index');
 
 config = config.tps;
 
-const query = new Query(config.sql);
-const CURRENT_TIME = (new Date()).getTime() / 1000;
-
-async function insertTpsBatch(tpsList) {
-  const keys = TABLE_COLUMNS.TRANS_PER_SECOND;
-  const valuesBlank = `(${keys.map(() => '?').join(',')})`;
-
-  const values = [];
-  const valuesStr = [];
-  const keysStr = `(${keys.join(',')})`;
-
-  tpsList.forEach(item => {
-    values.push(...keys.map(v => item[v]));
-    valuesStr.push(valuesBlank);
-  });
-  const sql = `insert into tps_0 ${keysStr} VALUES ${valuesStr.join(',')} ON DUPLICATE KEY UPDATE start=(start);`;
-  await query.query(sql, values);
-}
-
-async function insertTps(blocks = [], startTime, endTime) {
-  if (blocks.length) {
-    let txCount = 0;
-    blocks.forEach(block => {
-      txCount += parseInt(block.tx_count, 10);
+class TPS {
+  constructor(options) {
+    this.config = options;
+    this.query = new Query(options.sql);
+    this.scheduler = new Scheduler({
+      interval: options.scanInterval * 1000
     });
-    const tps = txCount / config.interval;
-    const tpm = txCount * 60 / config.interval;
-    const values = [{
+    this.confirmedSql = `select * from ${TABLE_NAME.BLOCKS_CONFIRMED} where time between ? and ? order by time ASC`;
+    this.unconfirmedSql = `select * from ${TABLE_NAME.BLOCKS_UNCONFIRMED} where time between ? and ? order by time ASC`;
+    this.lastCurrentTime = moment().unix();
+  }
+
+  async init() {
+    const firstBlockInBlockTable = await this.query.query('select * from blocks_0 where block_height=5', []);
+    const latestBlockInTPSTable = await this.query.query('select * from tps_0 order by end DESC limit 1 offset 0', []);
+
+    // 数据库中的初始区块时间
+    const firstBlockTime = firstBlockInBlockTable.length ? moment(firstBlockInBlockTable[0].time).unix() : 0;
+    if (!firstBlockTime) {
+      const errorMsg = 'can not find the first block in Database!';
+      console.error(errorMsg);
+      throw Error(errorMsg);
+    }
+    console.log('init');
+
+    // 最新的tps数据的时间
+    const newestTPSTime = latestBlockInTPSTable.length ? moment(latestBlockInTPSTable[0].end).unix() : 0;
+    const startTime = Math.max(firstBlockTime, newestTPSTime);
+    console.log('init start time', moment.unix(startTime).utc().format());
+    // decide to use loop or batch
+    const currentTime = moment().unix();
+    if (startTime <= currentTime - this.config.batchLimitTime) {
+      // 开始时间小于当前时间减去批量插入时间，开始批量插入
+      console.log('init start batch', moment.unix(startTime).utc().format());
+      await this.queryInBatch(startTime);
+    } else {
+      // 循环插入
+      console.log('init start loop', moment.unix(startTime).utc().format());
+      await this.queryInLoop(startTime);
+    }
+  }
+
+  async queryInBatch(startTime) {
+    let currentTime = moment().unix() - this.config.batchLimitTime;
+    for (let i = startTime; i < currentTime; i += this.config.batchDayInterval) {
+      console.log(`batch loop ${i}`, moment.unix(i).utc().format());
+      currentTime = moment().unix() - this.config.batchLimitTime;
+      let endTime = i + this.config.batchDayInterval;
+      if (endTime >= currentTime) {
+        // 此为最后一次循环
+        endTime = currentTime;
+        // 新endTime小于等于原endTime
+        endTime = this.floorEndTimeToMatchInterval(i, endTime);
+        currentTime = endTime;
+      }
+      // eslint-disable-next-line no-await-in-loop
+      const results = await this.getResults(i, endTime);
+      // eslint-disable-next-line no-await-in-loop
+      await this.insertTpsBatch(results);
+    }
+    await this.queryInLoop(currentTime);
+  }
+
+  async queryInLoop(startTime) {
+    this.lastCurrentTime = startTime;
+    this.scheduler.setCallback(async () => {
+      console.log('loop callback last time', moment.unix(this.lastCurrentTime).utc().format());
+      // 获取数据
+      const currentTime = moment().unix();
+      // eslint-disable-next-line max-len
+      const endTime = this.floorEndTimeToMatchInterval(this.lastCurrentTime, currentTime);
+      const results = await this.getResults(this.lastCurrentTime, endTime, true);
+      await this.insertTpsBatch(results);
+      this.lastCurrentTime = endTime;
+    });
+    this.scheduler.startTimer();
+  }
+
+  /**
+   * format end time to make the difference between startTime and endTime is the times of interval
+   * @param {Number} startTime
+   * @param {Number} endTime
+   * @returns {Number} endTime
+   */
+  floorEndTimeToMatchInterval(startTime, endTime) {
+    const timeDifference = this.config.interval * Math.floor((endTime - startTime) / this.config.interval);
+    return startTime + timeDifference;
+  }
+
+  async getResults(startTime, endTime, isLoop = false) {
+    const queryTimes = (endTime - startTime) / this.config.interval;
+    const intervals = new Array(queryTimes).fill(1).map((_, i) => startTime + i * this.config.interval);
+    const results = [];
+    for (let i = 0; i < intervals.length; i += this.config.maxQuery) {
+      // eslint-disable-next-line no-await-in-loop
+      const loopResult = await Promise.all(intervals.slice(i, i + this.config.maxQuery)
+        .map(v => this.getResultPerInterval(v, v + this.config.interval, isLoop)));
+      results.push(...loopResult);
+    }
+    return results;
+  }
+
+  async getResultPerInterval(startTime, endTime, isLoop = false) {
+    // 只有循环查询的情况下才需要查询unconfirmed
+    let blocks;
+    const startTimeUTC = moment.unix(startTime).utc().format();
+    const endTimeUTC = moment.unix(endTime).utc().format();
+    const sqlValues = [startTimeUTC, endTimeUTC];
+    blocks = await this.query.query(this.confirmedSql, sqlValues);
+    if (isLoop) {
+      const unconfirmedBlocks = await this.query.query(this.unconfirmedSql, sqlValues);
+      if (unconfirmedBlocks.length === 0 || blocks.length === 0) {
+        blocks = blocks.length ? blocks : unconfirmedBlocks;
+      } else {
+        // 合并去重
+        const unionBlocks = [...unconfirmedBlocks, ...blocks];
+        const uniqueBlocksHashes = {};
+        unionBlocks.forEach(v => {
+          unionBlocks[v.block_hash] = v;
+        });
+        blocks = Object.values(uniqueBlocksHashes);
+      }
+    }
+    return this.formatBlocksToTps(blocks, startTimeUTC, endTimeUTC);
+  }
+
+  /**
+   * get formatted value for inserting
+   * @param {[]} blocks
+   * @param {string} startTime unix timestamp UTC formatted
+   * @param {string} endTime unix timestamp UTC formatted
+   * @return {Object} value for inserting
+   */
+  formatBlocksToTps(blocks = [], startTime, endTime) {
+    const blocksCount = blocks.length;
+    const txCount = blocks.reduce((acc, i) => acc + parseInt(i.tx_count, 10), 0);
+    const tps = txCount / this.config.interval;
+    const tpm = txCount * 60 / this.config.interval;
+    return {
       start: startTime,
       end: endTime,
       txs: txCount,
-      blocks: blocks.length,
+      blocks: blocksCount,
       tps,
       tpm,
       type: config.minutes
-    }];
-
-    await insertTpsBatch(values);
-  } else {
-    const values = [{
-      start: startTime,
-      end: endTime,
-      txs: 0,
-      blocks: 0,
-      tps: 0,
-      tpm: 0,
-      type: config.minutes
-    }];
-    await insertTpsBatch(values);
+    };
   }
-}
 
-async function getTps(startTimeUnix, endTimeUnix, insertBatch) {
-  // Mysql '2018-11-05T03:29:18Z' and '2018-11-05T03:34:18Z'
-  // Will not get the data of 2018-11-05T03:29:18.xxxZ
-  // startTimeUnix -= 1;
-  const startTime = moment.unix(startTimeUnix).utc().format();
-  const endTime = moment.unix(endTimeUnix).utc().format();
-  const blocksConfirmed = await query.query(
-    'select * from blocks_0 where time between ? and ? order by time ASC',
-    [startTime, endTime]
-  );
-  const blocksUnconfirmed = await query.query(
-    'select * from blocks_unconfirmed where time between ? and ? order by time ASC',
-    [startTime, endTime]
-  );
-  const blocks = blocksConfirmed.length ? blocksConfirmed : blocksUnconfirmed;
+  async insertTpsBatch(tpsList = []) {
+    console.log('insert', tpsList.length);
+    if (tpsList.length === 0) {
+      return;
+    }
+    const keys = this.config.tableKeys;
+    const valuesBlank = `(${keys.map(() => '?').join(',')})`;
 
-  if (insertBatch) {
-    const needInsertList = [];
+    const values = [];
+    const valuesStr = [];
+    const keysStr = `(${keys.join(',')})`;
+
+    tpsList.forEach(item => {
+      values.push(...keys.map(v => item[v]));
+      valuesStr.push(valuesBlank);
+    });
     // eslint-disable-next-line max-len
-    for (let timeTemp = startTimeUnix, timeIndex = 0; timeTemp < endTimeUnix; timeTemp += config.interval, timeIndex++) {
-      const startTimeUnixTemp = timeTemp;
-      const endTimeUnixTemp = timeTemp + config.interval;
-      const option = {
-        start: moment.unix(startTimeUnixTemp).utc().format(),
-        end: moment.unix(endTimeUnixTemp).utc().format(),
-        txs: 0,
-        blocks: 0,
-        tps: 0,
-        tpm: 0,
-        type: config.minutes
-      };
-      for (let index = 0, { length } = blocks; index < length; index++) {
-        const block = blocks[0];
-        const blockTime = block.time;
-        const blockTimeUnix = moment(blockTime).unix();
-
-        if (blockTimeUnix < endTimeUnixTemp) {
-          option.txs += parseInt(block.tx_count, 10);
-          option.blocks++;
-          blocks.shift();
-        } else {
-          break;
-        }
-      }
-      option.tps = option.txs / config.interval;
-      option.tpm = option.txs / config.minutes;
-      needInsertList.push(option);
-    }
-    await insertTpsBatch(needInsertList);
-    // eslint-disable-next-line no-use-before-define
-    await getTpsTypeFilter(endTimeUnix);
-    return;
-  }
-
-  const newEndTimeUnix = endTimeUnix + config.interval;
-  const nowTimeUnix = (new Date()).getTime() / 1000;
-
-  console.log('FYI: ', endTimeUnix, newEndTimeUnix, nowTimeUnix, nowTimeUnix - newEndTimeUnix);
-  if (newEndTimeUnix < (nowTimeUnix - config.delayTime)) {
-    await insertTps(blocks, startTime, endTime);
-    // eslint-disable-next-line no-use-before-define
-    await getTpsTypeFilter(endTimeUnix);
-  } else {
-    console.log('into interval, interval seconds: ', config.scanInterval / 1000);
-    setTimeout(async () => {
-      await getTps(startTimeUnix, endTimeUnix);
-    }, config.scanInterval);
+    const sql = `insert into ${this.config.tableName} ${keysStr} VALUES ${valuesStr.join(',')} ON DUPLICATE KEY UPDATE start=(start);`;
+    await this.query.query(sql, values);
   }
 }
 
-async function getTpsTypeFilter(startTime) {
-  const currentStartInterval = CURRENT_TIME - startTime;
+const tps = new TPS({
+  ...config,
+  tableName: TABLE_NAME.TRANS_PER_SECOND,
+  tableKeys: TABLE_COLUMNS.TRANS_PER_SECOND
+});
 
-  let endTimeUnix = startTime + config.interval;
-  let insertBatch = false;
-
-  if (currentStartInterval > config.batchLimitTime) {
-    if (currentStartInterval > config.batchDayInterval) {
-      endTimeUnix = startTime + config.batchDayInterval;
-    } else {
-      endTimeUnix = CURRENT_TIME - config.batchLimitTime;
-    }
-    insertBatch = true;
-  }
-  console.log('getTpsTypeFilter: ', insertBatch);
-  await getTps(startTime, endTimeUnix, insertBatch);
-}
-
-async function init() {
-  const firstBlockInBlockTable = await query.query('select * from blocks_0 where block_height=5', []);
-  const latestBlockInTPSTable = await query.query('select * from tps_0 order by end DESC limit 1 offset 0', []);
-
-  const startTimeUnix01 = firstBlockInBlockTable[0] && moment(firstBlockInBlockTable[0].time).unix() || 0;
-  if (!startTimeUnix01) {
-    const errorMsg = 'can not find the first block in Database!';
-    console.error(errorMsg);
-    throw Error(errorMsg);
-  }
-
-  const startTimeUnix02 = latestBlockInTPSTable.length ? moment(latestBlockInTPSTable[0].end).unix() : 0;
-  const startTimeUnix = Math.max(startTimeUnix01, startTimeUnix02);
-  await getTpsTypeFilter(startTimeUnix);
-}
-
-init().catch(err => {
+tps.init().catch(err => {
   console.log(err);
 });
