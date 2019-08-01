@@ -63,7 +63,7 @@ class TPS {
         // 此为最后一次循环
         endTime = currentTime;
         // 新endTime小于等于原endTime
-        endTime = this.floorEndTimeToMatchInterval(i, endTime);
+        endTime = this.floorEndTimeToMatchInterval(i, endTime, false);
         currentTime = endTime;
       }
       // eslint-disable-next-line no-await-in-loop
@@ -142,10 +142,12 @@ class TPS {
    * format end time to make the difference between startTime and endTime is the times of interval
    * @param {Number} startTime
    * @param {Number} endTime
+   * @param {boolean} isLoop
    * @returns {Number} endTime
    */
-  floorEndTimeToMatchInterval(startTime, endTime) {
-    const timeDifference = this.config.interval * Math.floor((endTime - startTime) / this.config.interval);
+  floorEndTimeToMatchInterval(startTime, endTime, isLoop = true) {
+    const interval = isLoop ? this.config.interval : this.config.batchInterval;
+    const timeDifference = interval * Math.floor((endTime - startTime) / interval);
     return startTime + timeDifference;
   }
 
