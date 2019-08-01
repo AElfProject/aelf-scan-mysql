@@ -1,4 +1,5 @@
 # aelf-scan-mysql
+
 A mysql extension for block scanning
 
 Based on [aelf-block-scan](https://github.com/AElfProject/aelf-block-scan)
@@ -9,15 +10,15 @@ Here is a npm package [aelf-block-scan](https://www.npmjs.com/package/aelf-block
 
 ### Installation
 
-`yarn` or `npm i `
+`yarn` or `npm i`
 
-* install and configure your `mysql` server on localhost
-* create a database named `aelf_main_chain`
-* run `./db/init_sql.sh` script
+- install, configure and keep `mysql` and `redis` server running in localhost
+- use `mysql` create a database named `aelf_main_chain`
+- run `./db/init_sql.sh` script
 
 ### Development
 
-read and add your own configs in `config.dev.js`, especially the sql config.
+read and add your own configs in `config.dev.js`, especially the mysql and redis connection configs, _scan.host_ is also noteworthy.
 
 ```bash
 npm run dev
@@ -33,6 +34,6 @@ read and add your own configs in `config.prod.js`, especially the sql config
 npm start
 ```
 
-*Remember don't commit and push your sql config and password*
+**Remember don't commit and push your sql config and password**
 
 `PM2` can be used to stop, start, restart, monitor the process `aelf-scan-mysql`.
