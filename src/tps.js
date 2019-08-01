@@ -122,7 +122,10 @@ class TPS {
       console.log('loop callback last time', this.formatTime(this.lastCurrentTime));
       // 获取数据
       const currentTime = moment().unix();
-      // eslint-disable-next-line max-len
+      if (currentTime - this.lastCurrentTime < this.config.interval) {
+        // 间隔小于interval时不查询
+        return;
+      }
       const endTime = this.floorEndTimeToMatchInterval(this.lastCurrentTime, currentTime);
       const results = await this.getResults(this.lastCurrentTime, endTime, true);
       await this.insertTpsBatch(results);
