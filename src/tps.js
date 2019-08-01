@@ -77,7 +77,7 @@ class TPS {
   async queryInLoop(startTime) {
     this.lastCurrentTime = startTime;
     this.scheduler.setCallback(async () => {
-      console.log('loop callback last time', moment.unix(this.lastCurrentTime).utc().format());
+      console.log('loop callback last time', this.formatTime(this.lastCurrentTime));
       // 获取数据
       const currentTime = moment().unix();
       // eslint-disable-next-line max-len
@@ -87,6 +87,10 @@ class TPS {
       this.lastCurrentTime = endTime;
     });
     this.scheduler.startTimer();
+  }
+
+  formatTime(time) {
+    moment.unix(time).utc().format();
   }
 
   /**
@@ -108,18 +112,23 @@ class TPS {
       // eslint-disable-next-line no-await-in-loop
       const loopResult = await Promise.all(intervals.slice(i, i + this.config.maxQuery)
         .map(v => this.getResultPerInterval(v, v + this.config.interval, isLoop)));
+      // eslint-disable-next-line max-len
+      console.log(`get results, is in loop ${isLoop}, query from ${this.formatTime(intervals[i])} to ${this.formatTime(intervals[i + this.config.maxQuery])}`);
       results.push(...loopResult);
     }
     return results;
   }
 
   async getResultPerInterval(startTime, endTime, isLoop = false) {
+    // eslint-disable-next-line max-len
+    console.log(`getResultPerInterval, is in loop ${isLoop}, query from ${this.formatTime(startTime)} to ${this.formatTime(endTime)}`);
     // 只有循环查询的情况下才需要查询unconfirmed
     let blocks;
     const startTimeUTC = moment.unix(startTime).utc().format();
     const endTimeUTC = moment.unix(endTime).utc().format();
     const sqlValues = [startTimeUTC, endTimeUTC];
     blocks = await this.query.query(this.confirmedSql, sqlValues);
+    // eslint-disable-next-line max-len
     if (isLoop) {
       const unconfirmedBlocks = await this.query.query(this.unconfirmedSql, sqlValues);
       if (unconfirmedBlocks.length === 0 || blocks.length === 0) {
