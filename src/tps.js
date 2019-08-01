@@ -18,8 +18,8 @@ class TPS {
     this.scheduler = new Scheduler({
       interval: options.scanInterval * 1000
     });
-    this.confirmedSql = `select * from ${TABLE_NAME.BLOCKS_CONFIRMED} where time between ? and ? order by time ASC`;
-    this.unconfirmedSql = `select * from ${TABLE_NAME.BLOCKS_UNCONFIRMED} where time between ? and ? order by time ASC`;
+    this.confirmedSql = `select * from ${TABLE_NAME.BLOCKS_CONFIRMED} where time between ? and ?`;
+    this.unconfirmedSql = `select * from ${TABLE_NAME.BLOCKS_UNCONFIRMED} where time between ? and ?`;
     this.lastCurrentTime = moment().unix();
   }
 
@@ -69,9 +69,51 @@ class TPS {
       // eslint-disable-next-line no-await-in-loop
       const results = await this.getResults(i, endTime);
       // eslint-disable-next-line no-await-in-loop
-      await this.insertTpsBatch(results);
+      await this.handleBatch(results);
     }
     await this.queryInLoop(currentTime);
+  }
+
+  async handleBatch(list) {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const item of list) {
+      const { blocks, startTime, endTime } = item;
+      let insertValues = new Array(Math.floor((endTime - startTime) / this.config.interval))
+        .fill(1)
+        .map((_, i) => ({
+          start: this.formatTime(startTime + i * this.config.interval),
+          end: this.formatTime(startTime + (i + 1) * this.config.interval),
+          txs: 0,
+          blocks: 0,
+          tps: 0,
+          tpm: 0,
+          type: this.config.minutes
+        }));
+      // eslint-disable-next-line no-restricted-syntax
+      for (const block of blocks) {
+        const time = moment(block.time).unix();
+        const index = Math.floor((time - startTime) / this.config.interval);
+        if (index === 0) {
+          console.log(index);
+        }
+        const currentItem = insertValues[index];
+        currentItem.txs += parseInt(block.tx_count, 10);
+        currentItem.blocks += 1;
+      }
+      insertValues = insertValues.map(v => {
+        const tps = v.txs / this.config.interval;
+        const tpm = tps * 60;
+        return {
+          ...v,
+          tps,
+          tpm
+        };
+      });
+      for (let i = 0; i < insertValues.length; i += this.config.maxInsert) {
+        // eslint-disable-next-line no-await-in-loop
+        await this.insertTpsBatch(insertValues.slice(i, i + this.config.maxInsert));
+      }
+    }
   }
 
   async queryInLoop(startTime) {
@@ -105,13 +147,16 @@ class TPS {
   }
 
   async getResults(startTime, endTime, isLoop = false) {
-    const queryTimes = (endTime - startTime) / this.config.interval;
-    const intervals = new Array(queryTimes).fill(1).map((_, i) => startTime + i * this.config.interval);
+    // eslint-disable-next-line max-len
+    console.log(`get results, is in loop ${isLoop}, query from ${this.formatTime(startTime)} to ${this.formatTime(endTime)}`);
+    const interval = isLoop ? this.config.interval : this.config.batchInterval;
+    const queryTimes = Math.floor((endTime - startTime) / interval);
+    const intervals = new Array(queryTimes).fill(1).map((_, i) => startTime + i * interval);
     const results = [];
     for (let i = 0; i < intervals.length; i += this.config.maxQuery) {
       // eslint-disable-next-line no-await-in-loop
       const loopResult = await Promise.all(intervals.slice(i, i + this.config.maxQuery)
-        .map(v => this.getResultPerInterval(v, v + this.config.interval, isLoop)));
+        .map(v => this.getResultPerInterval(v, v + interval, isLoop)));
       // eslint-disable-next-line max-len
       console.log(`get results, is in loop ${isLoop}, query from ${this.formatTime(intervals[i])} to ${this.formatTime(intervals[i + this.config.maxQuery])}`);
       results.push(...loopResult);
@@ -143,7 +188,11 @@ class TPS {
         blocks = Object.values(uniqueBlocksHashes);
       }
     }
-    return this.formatBlocksToTps(blocks, startTimeUTC, endTimeUTC);
+    return isLoop ? this.formatBlocksToTps(blocks, startTimeUTC, endTimeUTC) : {
+      blocks,
+      startTime,
+      endTime
+    };
   }
 
   /**
@@ -165,7 +214,7 @@ class TPS {
       blocks: blocksCount,
       tps,
       tpm,
-      type: config.minutes
+      type: this.config.minutes
     };
   }
 

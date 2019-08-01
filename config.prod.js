@@ -60,6 +60,8 @@ module.exports = {
     delayTime: 10, // s
     batchLimitTime: 3600, // s
     batchDayInterval: 24 * 3600, // s
-    maxQuery: 20
+    maxQuery: 20,
+    batchInterval: 12 * 60 * 60, // s
+    maxInsert: 200
   }
 };
