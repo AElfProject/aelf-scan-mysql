@@ -39,16 +39,16 @@ class TPS {
     // 最新的tps数据的时间
     const newestTPSTime = latestBlockInTPSTable.length ? moment(latestBlockInTPSTable[0].end).unix() : 0;
     const startTime = Math.max(firstBlockTime, newestTPSTime);
-    console.log('init start time', moment.unix(startTime).utc().format());
+    console.log('init start time', this.formatTime(startTime));
     // decide to use loop or batch
     const currentTime = moment().unix();
     if (startTime <= currentTime - this.config.batchLimitTime) {
       // 开始时间小于当前时间减去批量插入时间，开始批量插入
-      console.log('init start batch', moment.unix(startTime).utc().format());
+      console.log('init start batch', this.formatTime(startTime));
       await this.queryInBatch(startTime);
     } else {
       // 循环插入
-      console.log('init start loop', moment.unix(startTime).utc().format());
+      console.log('init start loop', this.formatTime(startTime));
       await this.queryInLoop(startTime);
     }
   }
@@ -56,7 +56,7 @@ class TPS {
   async queryInBatch(startTime) {
     let currentTime = moment().unix() - this.config.batchLimitTime;
     for (let i = startTime; i < currentTime; i += this.config.batchDayInterval) {
-      console.log(`batch loop ${i}`, moment.unix(i).utc().format());
+      console.log(`batch loop ${i}`, this.formatTime(i));
       currentTime = moment().unix() - this.config.batchLimitTime;
       let endTime = i + this.config.batchDayInterval;
       if (endTime >= currentTime) {
@@ -90,7 +90,7 @@ class TPS {
   }
 
   formatTime(time) {
-    moment.unix(time).utc().format();
+    return moment.unix(time).utc().format();
   }
 
   /**
@@ -124,8 +124,8 @@ class TPS {
     console.log(`getResultPerInterval, is in loop ${isLoop}, query from ${this.formatTime(startTime)} to ${this.formatTime(endTime)}`);
     // 只有循环查询的情况下才需要查询unconfirmed
     let blocks;
-    const startTimeUTC = moment.unix(startTime).utc().format();
-    const endTimeUTC = moment.unix(endTime).utc().format();
+    const startTimeUTC = this.formatTime(startTime);
+    const endTimeUTC = this.formatTime(endTime);
     const sqlValues = [startTimeUTC, endTimeUTC];
     blocks = await this.query.query(this.confirmedSql, sqlValues);
     // eslint-disable-next-line max-len
