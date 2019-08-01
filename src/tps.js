@@ -92,9 +92,9 @@ class TPS {
       // eslint-disable-next-line no-restricted-syntax
       for (const block of blocks) {
         const time = moment(block.time).unix();
-        const index = Math.floor((time - startTime) / this.config.interval);
-        if (index === 0) {
-          console.log(index);
+        let index = Math.floor((time - startTime) / this.config.interval);
+        if (index === insertValues.length) {
+          index -= 1;
         }
         const currentItem = insertValues[index];
         currentItem.txs += parseInt(block.tx_count, 10);
