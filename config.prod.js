@@ -33,7 +33,7 @@ module.exports = {
   scan: {
     interval: 8000,
     concurrentQueryLimit: 30,
-    host: 'http://54.169.99.49:8000',
+    host: 'http://13.231.179.27:8000',
     maxInsert: 210
   },
   wallet: {
@@ -56,12 +56,11 @@ module.exports = {
     },
     minutes: 1, // minute
     interval: 60, // s, 秒
-    scanInterval: 55, // s
+    scanInterval: 60 * 5, // s
     delayTime: 10, // s
-    batchLimitTime: 3600, // s
+    batchLimitTime: 60 * 10, // s
     batchDayInterval: 24 * 3600, // s
     maxQuery: 20,
-    batchInterval: 12 * 60 * 60, // s
     maxInsert: 200
   }
 };

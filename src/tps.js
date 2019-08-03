@@ -63,63 +63,66 @@ class TPS {
         // 此为最后一次循环
         endTime = currentTime;
         // 新endTime小于等于原endTime
-        endTime = this.floorEndTimeToMatchInterval(i, endTime, false);
+        endTime = this.floorEndTimeToMatchInterval(i, endTime, this.config.interval);
         currentTime = endTime;
       }
       // eslint-disable-next-line no-await-in-loop
-      const results = await this.getResults(i, endTime);
+      const results = await this.getResultPerInterval(i, endTime, false);
       // eslint-disable-next-line no-await-in-loop
       await this.handleBatch(results);
     }
     await this.queryInLoop(currentTime);
   }
 
-  async handleBatch(list) {
+  async handleBatch(data) {
     // eslint-disable-next-line no-restricted-syntax
-    for (const item of list) {
-      const { blocks, startTime, endTime } = item;
-      let insertValues = new Array(Math.floor((endTime - startTime) / this.config.interval))
-        .fill(1)
-        .map((_, i) => ({
-          start: this.formatTime(startTime + i * this.config.interval),
-          end: this.formatTime(startTime + (i + 1) * this.config.interval),
-          txs: 0,
-          blocks: 0,
-          tps: 0,
-          tpm: 0,
-          type: this.config.minutes
-        }));
-      // eslint-disable-next-line no-restricted-syntax
-      for (const block of blocks) {
-        const time = moment(block.time).unix();
-        let index = Math.floor((time - startTime) / this.config.interval);
-        if (index === insertValues.length) {
-          index -= 1;
-        }
+    const { blocks, startTime, endTime } = data;
+    let insertValues = new Array(Math.floor((endTime - startTime) / this.config.interval))
+      .fill(1)
+      .map((_, i) => ({
+        start: this.formatTime(startTime + i * this.config.interval),
+        end: this.formatTime(startTime + (i + 1) * this.config.interval),
+        txs: 0,
+        blocks: 0,
+        tps: 0,
+        tpm: 0,
+        type: this.config.minutes
+      }));
+    // eslint-disable-next-line no-restricted-syntax
+    for (const block of blocks) {
+      const time = moment(block.time).unix();
+      const index = Math.floor((time - startTime) / this.config.interval);
+      if (index !== insertValues.length) {
+        // 即time === endTime时，不计数，从而避免重复计数
         const currentItem = insertValues[index];
         currentItem.txs += parseInt(block.tx_count, 10);
         currentItem.blocks += 1;
+      } else {
+        console.log(`ceil index ${index}, block info ${JSON.stringify(block)}, continue without counting it`);
       }
-      insertValues = insertValues.map(v => {
-        const tps = v.txs / this.config.interval;
-        const tpm = tps * 60;
-        return {
-          ...v,
-          tps,
-          tpm
-        };
-      });
-      for (let i = 0; i < insertValues.length; i += this.config.maxInsert) {
-        // eslint-disable-next-line no-await-in-loop
-        await this.insertTpsBatch(insertValues.slice(i, i + this.config.maxInsert));
-      }
+    }
+    insertValues = insertValues.map(v => {
+      const tps = v.txs / this.config.interval;
+      const tpm = tps * 60;
+      return {
+        ...v,
+        tps,
+        tpm
+      };
+    });
+    for (let i = 0; i < insertValues.length; i += this.config.maxInsert) {
+      // eslint-disable-next-line no-await-in-loop
+      await this.insertTpsBatch(insertValues.slice(i, i + this.config.maxInsert));
     }
   }
 
   async queryInLoop(startTime) {
+    console.log('loop query from time', this.formatTime(startTime));
+    console.log(`loop current time ${moment().utc().format()}`);
     this.lastCurrentTime = startTime;
     this.scheduler.setCallback(async () => {
       console.log('loop callback last time', this.formatTime(this.lastCurrentTime));
+      console.log(`loop current time ${moment().utc().format()}`);
       // 获取数据
       const currentTime = moment().unix();
       if (currentTime - this.lastCurrentTime < this.config.interval) {
@@ -127,8 +130,8 @@ class TPS {
         return;
       }
       const endTime = this.floorEndTimeToMatchInterval(this.lastCurrentTime, currentTime);
-      const results = await this.getResults(this.lastCurrentTime, endTime, true);
-      await this.insertTpsBatch(results);
+      const results = await this.getResultPerInterval(this.lastCurrentTime, endTime, true);
+      await this.handleBatch(results);
       this.lastCurrentTime = endTime;
     });
     this.scheduler.startTimer();
@@ -140,21 +143,19 @@ class TPS {
 
   /**
    * format end time to make the difference between startTime and endTime is the times of interval
-   * @param {Number} startTime
-   * @param {Number} endTime
-   * @param {boolean} isLoop
-   * @returns {Number} endTime
+   * @param {number} startTime
+   * @param {number} endTime
+   * @param {number} interval
+   * @returns {number} endTime
    */
-  floorEndTimeToMatchInterval(startTime, endTime, isLoop = true) {
-    const interval = isLoop ? this.config.interval : this.config.batchInterval;
+  floorEndTimeToMatchInterval(startTime, endTime, interval = 60) {
     const timeDifference = interval * Math.floor((endTime - startTime) / interval);
     return startTime + timeDifference;
   }
 
-  async getResults(startTime, endTime, isLoop = false) {
+  async getResults(startTime, endTime, isLoop = false, interval = 60) {
     // eslint-disable-next-line max-len
     console.log(`get results, is in loop ${isLoop}, query from ${this.formatTime(startTime)} to ${this.formatTime(endTime)}`);
-    const interval = isLoop ? this.config.interval : this.config.batchInterval;
     const queryTimes = Math.floor((endTime - startTime) / interval);
     const intervals = new Array(queryTimes).fill(1).map((_, i) => startTime + i * interval);
     const results = [];
@@ -163,7 +164,7 @@ class TPS {
       const loopResult = await Promise.all(intervals.slice(i, i + this.config.maxQuery)
         .map(v => this.getResultPerInterval(v, v + interval, isLoop)));
       // eslint-disable-next-line max-len
-      console.log(`get results, is in loop ${isLoop}, query from ${this.formatTime(intervals[i])} to ${this.formatTime(intervals[i + this.config.maxQuery])}`);
+      console.log(`get results for-loop, is in loop ${isLoop}, query from ${this.formatTime(intervals[i])} to ${this.formatTime(intervals[i + this.config.maxQuery] || endTime)}`);
       results.push(...loopResult);
     }
     return results;
@@ -193,33 +194,10 @@ class TPS {
         blocks = Object.values(uniqueBlocksHashes);
       }
     }
-    return isLoop ? this.formatBlocksToTps(blocks, startTimeUTC, endTimeUTC) : {
+    return {
       blocks,
       startTime,
       endTime
-    };
-  }
-
-  /**
-   * get formatted value for inserting
-   * @param {[]} blocks
-   * @param {string} startTime unix timestamp UTC formatted
-   * @param {string} endTime unix timestamp UTC formatted
-   * @return {Object} value for inserting
-   */
-  formatBlocksToTps(blocks = [], startTime, endTime) {
-    const blocksCount = blocks.length;
-    const txCount = blocks.reduce((acc, i) => acc + parseInt(i.tx_count, 10), 0);
-    const tps = txCount / this.config.interval;
-    const tpm = txCount * 60 / this.config.interval;
-    return {
-      start: startTime,
-      end: endTime,
-      txs: txCount,
-      blocks: blocksCount,
-      tps,
-      tpm,
-      type: this.config.minutes
     };
   }
 
