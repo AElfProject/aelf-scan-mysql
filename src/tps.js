@@ -91,6 +91,10 @@ class TPS {
     // eslint-disable-next-line no-restricted-syntax
     for (const block of blocks) {
       const time = moment(block.time).unix();
+      // 统计规则为时间范围左开右闭，则与区域开始时间相同的区块不计数
+      if ((time - startTime) % this.config.interval === 0) {
+        return;
+      }
       let index = Math.floor((time - startTime) / this.config.interval);
       if (index === insertValues.length) {
         // between 条件为左开右闭区间，ceil index 需要添加计数
