@@ -123,8 +123,8 @@ class TPS {
     this.scheduler.setCallback(async () => {
       console.log('loop callback last time', this.formatTime(this.lastCurrentTime));
       console.log(`loop current time ${moment().utc().format()}`);
-      // 获取数据
-      const currentTime = moment().unix();
+      // 获取数据, 设置延迟
+      const currentTime = moment().unix() - this.config.delayTime;
       if (currentTime - this.lastCurrentTime < this.config.interval) {
         // 间隔小于interval时不查询
         return;
