@@ -5,13 +5,13 @@
  Source Server Type    : MySQL
  Source Server Version : 100309
  Source Host           : localhost:3306
- Source Schema         : aelf_test_newchain
+ Source Schema         : aelf_test_0719
 
  Target Server Type    : MySQL
  Target Server Version : 100309
  File Encoding         : 65001
 
- Date: 19/07/2019 19:48:46
+ Date: 20/07/2019 18:59:44
 */
 
 SET NAMES utf8mb4;
@@ -42,7 +42,9 @@ CREATE TABLE `blocks_0` (
   `merkle_root_tx` varchar(64) NOT NULL,
   `merkle_root_state` varchar(64) NOT NULL,
   `time` varchar(64) NOT NULL COMMENT '直接转存节点来的',
-  PRIMARY KEY (`block_hash`)
+  PRIMARY KEY (`block_hash`),
+  KEY `block_hash` (`block_hash`),
+  KEY `block_height` (`block_height`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
@@ -58,7 +60,9 @@ CREATE TABLE `blocks_unconfirmed` (
   `merkle_root_tx` varchar(64) NOT NULL,
   `merkle_root_state` varchar(64) NOT NULL,
   `time` varchar(64) NOT NULL COMMENT '直接转存节点来的',
-  PRIMARY KEY (`block_hash`)
+  PRIMARY KEY (`block_hash`),
+  KEY `block_hash` (`block_hash`),
+  KEY `block_height` (`block_height`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
@@ -165,7 +169,11 @@ CREATE TABLE `transactions_0` (
   `quantity` bigint(64) unsigned NOT NULL,
   `tx_status` varchar(64) NOT NULL,
   `time` varchar(64) NOT NULL COMMENT 'time of blocks',
-  PRIMARY KEY (`tx_id`,`params_to`)
+  PRIMARY KEY (`tx_id`,`params_to`),
+  KEY `params_to` (`params_to`),
+  KEY `method` (`method`),
+  KEY `address_to` (`address_to`),
+  KEY `address_from` (`address_from`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
@@ -185,7 +193,11 @@ CREATE TABLE `transactions_unconfirmed` (
   `quantity` bigint(64) unsigned NOT NULL,
   `tx_status` varchar(64) NOT NULL,
   `time` varchar(64) NOT NULL COMMENT 'time of blocks',
-  PRIMARY KEY (`tx_id`,`params_to`)
+  PRIMARY KEY (`tx_id`,`params_to`),
+  KEY `params_to` (`params_to`),
+  KEY `method` (`method`),
+  KEY `address_to` (`address_to`),
+  KEY `address_from` (`address_from`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
