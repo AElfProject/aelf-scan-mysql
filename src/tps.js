@@ -92,16 +92,14 @@ class TPS {
     for (const block of blocks) {
       const time = moment(block.time).unix();
       let index = Math.floor((time - startTime) / this.config.interval);
-      if (index !== insertValues.length) {
-        // 即time === endTime时，不计数，从而避免重复计数
-        const currentItem = insertValues[index];
-        currentItem.txs += parseInt(block.tx_count, 10);
-        currentItem.blocks += 1;
-      } else {
+      if (index === insertValues.length) {
         // between 条件为左开右闭区间，ceil index 需要添加计数
         console.log(`ceil index ${index}, block info ${JSON.stringify(block)}, continue with counting it`);
         index -= 1;
       }
+      const currentItem = insertValues[index];
+      currentItem.txs += parseInt(block.tx_count, 10);
+      currentItem.blocks += 1;
     }
     insertValues = insertValues.map(v => {
       const tps = v.txs / this.config.interval;
