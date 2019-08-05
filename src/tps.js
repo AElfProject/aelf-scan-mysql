@@ -91,16 +91,13 @@ class TPS {
       }));
     // eslint-disable-next-line no-restricted-syntax
     for (const block of blocks) {
+      // 对于毫秒会全部丢弃
       const time = moment(block.time).unix();
-      // 统计规则为时间范围左开右闭，则与区域开始时间相同的区块不计数
-      if ((time - startTime) % this.config.interval === 0) {
-        // eslint-disable-next-line no-continue
-        continue;
-      }
       let index = Math.floor((time - startTime) / this.config.interval);
-      if (index === insertValues.length) {
-        // between 条件为左开右闭区间，ceil index 需要添加计数
-        console.log(`ceil index ${index}, block info ${JSON.stringify(block)}, continue with counting it`);
+      const mod = (time - startTime) % this.config.interval;
+      // 统计规则为时间范围左开右闭，则与区域开始时间相同的区块不计数，计入上一个时间段
+      if (mod === 0 && index !== 0) {
+        console.log(`abort index ${index}, block info ${JSON.stringify(block)}, continue with reduce index`);
         index -= 1;
       }
       const currentItem = insertValues[index];
