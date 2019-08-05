@@ -1,3 +1,7 @@
+/**
+ * @file insert
+ * @author atom-yang
+ */
 const {
   Scanner
 } = require('aelf-block-scan');
@@ -21,9 +25,9 @@ class CustomInsert {
     process.on('SIGUSR1', this.cleanup);
     process.on('SIGUSR2', this.cleanup);
 
-    process.on('uncaughtException', async err => {
+    process.on('uncaughtException', err => {
       console.log(err);
-      await this.restart();
+      this.restart();
       console.log('restart successfully');
     });
     this.config = options;
@@ -108,4 +112,7 @@ class CustomInsert {
 
 const customInsert = new CustomInsert(config);
 
-customInsert.init();
+customInsert.init().catch(err => {
+  console.error(err);
+  customInsert.restart();
+});
