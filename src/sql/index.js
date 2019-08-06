@@ -113,7 +113,7 @@ class Query {
   close() {
     this.pool.end();
     if (this.redisQuery) {
-      this.redisQuery.end();
+      this.redisQuery.close();
     }
   }
 

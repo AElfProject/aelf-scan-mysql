@@ -12,6 +12,8 @@ const { contractTokenFormatter } = require('./formatters/index');
 const { config } = require('./common/constants');
 const { startTPS, stopTPS } = require('./tps/index');
 
+let customInsert = null;
+
 class CustomInsert {
   constructor(options) {
     process.stdin.resume(); // so the program will not close instantly
@@ -63,8 +65,8 @@ class CustomInsert {
 
   cleanup() {
     console.log('cleanup');
-    if (this.sqlQuery) {
-      this.sqlQuery.close();
+    if (customInsert.sqlQuery) {
+      customInsert.sqlQuery.close();
     }
     process.exit(1);
   }
@@ -102,15 +104,21 @@ class CustomInsert {
   }
 
   async restart() {
-    this.sqlQuery = new Query(config.sql);
-    await this.sqlQuery.initCounts();
-    const restartOptions = await this.getConfig();
-    restartOptions.aelfInstance = this.aelf;
-    this.scanner.restart(new DBOperation({}, this.sqlQuery), restartOptions);
+    return new Promise(resolve => {
+      console.log('will restart in 2 minutes');
+      setTimeout(async () => {
+        this.sqlQuery = new Query(config.sql);
+        await this.sqlQuery.initCounts();
+        const restartOptions = await this.getConfig();
+        restartOptions.aelfInstance = this.aelf;
+        this.scanner.restart(new DBOperation({}, this.sqlQuery), restartOptions);
+        resolve();
+      }, 120000);
+    });
   }
 }
 
-const customInsert = new CustomInsert(config);
+customInsert = new CustomInsert(config);
 
 customInsert.init().catch(err => {
   console.error(err);

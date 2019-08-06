@@ -35,14 +35,22 @@ function stopTPS() {
   if (!needTPS) {
     return Promise.resolve();
   }
-  return executeTps('stop');
+  return execCommand('pm2 show aelf-scan-mysql-tps')
+    .then(() => executeTps('stop'))
+    .catch(() => {
+      console.log('there is no aelf-scan-mysql-tps pm2 process');
+    });
 }
 
 function restartTPS() {
   if (!needTPS) {
     return Promise.resolve();
   }
-  return executeTps('restart');
+  return execCommand('pm2 show aelf-scan-mysql-tps')
+    .then(() => executeTps('restart'))
+    .catch(() => {
+      console.log('there is no aelf-scan-mysql-tps pm2 process');
+    });
 }
 
 module.exports = {
