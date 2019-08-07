@@ -97,7 +97,6 @@ class TPS {
       const mod = (time - startTime) % this.config.interval;
       // 统计规则为时间范围左开右闭，则与区域开始时间相同的区块不计数，计入上一个时间段
       if (mod === 0 && index !== 0) {
-        console.log(`abort index ${index}, block info ${JSON.stringify(block)}, continue with reduce index`);
         index -= 1;
       }
       const currentItem = insertValues[index];
