@@ -11,6 +11,7 @@ const DBOperation = require('./dbOperation/index');
 const { contractTokenFormatter } = require('./formatters/index');
 const { config } = require('./common/constants');
 const { startTPS, stopTPS } = require('./tps/index');
+const { sendEmails } = require('./emails');
 
 let customInsert = null;
 
@@ -30,7 +31,6 @@ class CustomInsert {
     process.on('uncaughtException', err => {
       console.log(err);
       this.restart();
-      console.log('restart successfully');
     });
     this.config = options;
     this.aelf = new AElf(new AElf.providers.HttpProvider(this.config.scan.host, 3000));
@@ -58,8 +58,9 @@ class CustomInsert {
       // todo: 日志记录，pm2相关
       console.log(err);
       await stopTPS();
-      await this.restart();
-      console.log('restart successfully');
+      await sendEmails(err);
+      // await this.restart();
+      // console.log('restart successfully');
     });
   }
 
