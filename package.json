@@ -5,8 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "dev": "npm run clean && cross-env NODE_ENV=development pm2 start src/index.js --name aelf-scan-mysql",
-    "start": "cross-env NODE_ENV=production pm2 start src/index.js --name aelf-scan-mysql --exp-backoff-restart-delay=1000",
-    "tps:start": "cross-env NODE_ENV=production pm2 start src/tps.js --name aelf-scan-mysql-tps --exp-backoff-restart-delay=1000",
+    "start": "cross-env NODE_ENV=production pm2 start src/index.js --name aelf-scan-mysql --exp-backoff-restart-delay=1000 --time",
+    "tps:start": "cross-env NODE_ENV=production pm2 start src/tps.js --name aelf-scan-mysql-tps --exp-backoff-restart-delay=1000 --time",
     "tps:stop": "cross-env NODE_ENV=production pm2 stop aelf-scan-mysql-tps",
     "tps:restart": "cross-env NODE_ENV=production pm2 restart aelf-scan-mysql-tps",
     "clean": "rimraf ./*.log ",
