@@ -37,7 +37,6 @@ async function sendEmails(message = '') {
     console.log(e);
   }
 }
-sendEmails(new Error('msg')).then(console.log);
 
 module.exports = {
   sendEmails
