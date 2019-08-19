@@ -17,7 +17,7 @@ let customInsert;
 
 class CustomInsert {
   constructor(options) {
-    process.stdin.resume(); // so the program will not close instantly
+    // process.stdin.resume(); // so the program will not close instantly
     // do something when app is closing
     process.on('exit', this.cleanup);
 
