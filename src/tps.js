@@ -25,7 +25,7 @@ class TPS {
 
   async init() {
     // eslint-disable-next-line max-len
-    const firstBlockInBlockTable = await this.query.query('select * from blocks_0 order by block_height ASC limit 1 offset 0', []);
+    const firstBlockInBlockTable = await this.query.query('select * from blocks_0 order by block_height ASC limit 1 offset 5', []);
     const latestBlockInTPSTable = await this.query.query('select * from tps_0 order by end DESC limit 1 offset 0', []);
 
     // 数据库中的初始区块时间
