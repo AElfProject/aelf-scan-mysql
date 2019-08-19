@@ -10,10 +10,10 @@ const Query = require('./sql/index');
 const DBOperation = require('./dbOperation/index');
 const { contractTokenFormatter } = require('./formatters/index');
 const { config } = require('./common/constants');
-const { startTPS, stopTPS } = require('./tps/index');
+const tps = require('./tps.js');
 const { sendEmails } = require('./emails');
 
-let customInsert = null;
+let customInsert;
 
 class CustomInsert {
   constructor(options) {
@@ -51,16 +51,19 @@ class CustomInsert {
     this.scanner = new Scanner(new DBOperation({}, this.sqlQuery), options);
     this.scanner.start().then(() => {
       // 采集tps信息
-      startTPS();
       console.log('start loop');
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve(tps.init());
+        }, 120000);
+      });
     }).catch(async err => {
       // 错误处理，重启
       // todo: 日志记录，pm2相关
       console.log(err);
-      await stopTPS();
       await sendEmails(err);
-      // await this.restart();
-      // console.log('restart successfully');
+      await this.restart();
+      console.log('restart successfully');
     });
   }
 
@@ -105,23 +108,11 @@ class CustomInsert {
   }
 
   async restart() {
-    return new Promise(resolve => {
-      console.log('will restart in 2 minutes');
-      setTimeout(async () => {
-        this.sqlQuery = new Query(config.sql);
-        await this.sqlQuery.initCounts();
-        const restartOptions = await this.getConfig();
-        restartOptions.aelfInstance = this.aelf;
-        this.scanner.restart(new DBOperation({}, this.sqlQuery), restartOptions);
-        resolve();
-      }, 120000);
-    });
+    tps.stop();
+    await this.init();
   }
 }
 
 customInsert = new CustomInsert(config);
 
-customInsert.init().catch(err => {
-  console.error(err);
-  customInsert.restart();
-});
+customInsert.init();

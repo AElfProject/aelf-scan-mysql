@@ -24,7 +24,8 @@ class TPS {
   }
 
   async init() {
-    const firstBlockInBlockTable = await this.query.query('select * from blocks_0 where block_height=5', []);
+    // eslint-disable-next-line max-len
+    const firstBlockInBlockTable = await this.query.query('select * from blocks_0 order by block_height ASC limit 1 offset 0', []);
     const latestBlockInTPSTable = await this.query.query('select * from tps_0 order by end DESC limit 1 offset 0', []);
 
     // 数据库中的初始区块时间
@@ -224,6 +225,10 @@ class TPS {
     const sql = `insert into ${this.config.tableName} ${keysStr} VALUES ${valuesStr.join(',')} ON DUPLICATE KEY UPDATE start=(start);`;
     await this.query.query(sql, values);
   }
+
+  stop() {
+    this.scheduler.endTimer();
+  }
 }
 
 const tps = new TPS({
@@ -232,6 +237,4 @@ const tps = new TPS({
   tableKeys: TABLE_COLUMNS.TRANS_PER_SECOND
 });
 
-tps.init().catch(err => {
-  console.log(err);
-});
+module.exports = tps;
