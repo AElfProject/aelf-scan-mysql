@@ -4,6 +4,7 @@
  * @date 2019-07-22
  */
 const { exec } = require('child_process');
+const moment = require('moment');
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -19,6 +20,9 @@ if (isProd) {
 function isResourceTransaction(transaction) {
   if (!config.contracts.resource) {
     return false;
+  }
+  if (!transaction.Transaction) {
+    console.warn(`${moment().format()} empty transaction ${JSON.stringify(transaction)}`);
   }
   const { To, MethodName } = transaction.Transaction;
   return To === config.contracts.resource && (MethodName === 'Buy' || MethodName === 'Sell');

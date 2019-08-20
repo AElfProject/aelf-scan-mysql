@@ -11,7 +11,6 @@ const DBOperation = require('./dbOperation/index');
 const { contractTokenFormatter } = require('./formatters/index');
 const { config } = require('./common/constants');
 const tps = require('./tps.js');
-const { sendEmails } = require('./emails');
 
 let customInsert;
 
@@ -52,18 +51,9 @@ class CustomInsert {
     this.scanner.start().then(() => {
       // 采集tps信息
       console.log('start loop');
-      return new Promise(resolve => {
-        setTimeout(() => {
-          resolve(tps.init());
-        }, 120000);
-      });
-    }).catch(async err => {
-      // 错误处理，重启
-      // todo: 日志记录，pm2相关
-      console.log(err);
-      await sendEmails(err);
-      await this.restart();
-      console.log('restart successfully');
+      setTimeout(() => {
+        tps.init();
+      }, 120000);
     });
   }
 
