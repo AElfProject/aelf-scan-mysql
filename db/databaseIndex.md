@@ -26,3 +26,13 @@ alter table blocks_0 add index block_hash(block_hash);
 alter table blocks_0 add index time(time);
 alter table blocks_unconfirmed add index time(time);
 ```
+
+```mysql index
+ALTER TABLE `transactions_0` ADD INDEX unique_id_params_to ( `tx_id`, `params_to`)
+```
+
+```mysql
+# 清空自增
+# ALTER TABLE TABLE_NAME AUTO_INCREMENT = 0;
+ALTER TABLE transactions_0 AUTO_INCREMENT = 0;
+```
