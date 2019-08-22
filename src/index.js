@@ -19,19 +19,19 @@ class CustomInsert {
   constructor(options) {
     // process.stdin.resume(); // so the program will not close instantly
     // do something when app is closing
-    process.on('exit', this.cleanup);
-
-    // catches ctrl+c event
-    process.on('SIGINT', this.cleanup);
-
-    // catches "kill pid" (for example: nodemon restart)
-    process.on('SIGUSR1', this.cleanup);
-    process.on('SIGUSR2', this.cleanup);
-
-    process.on('uncaughtException', err => {
-      console.log(err);
-      this.restart();
-    });
+    // process.on('exit', this.cleanup);
+    //
+    // // catches ctrl+c event
+    // process.on('SIGINT', this.cleanup);
+    //
+    // // catches "kill pid" (for example: nodemon restart)
+    // process.on('SIGUSR1', this.cleanup);
+    // process.on('SIGUSR2', this.cleanup);
+    //
+    // process.on('uncaughtException', err => {
+    //   console.log(err);
+    //   this.restart();
+    // });
     this.config = options;
     this.aelf = new AElf(new AElf.providers.HttpProvider(this.config.scan.host, 3000));
     this.wallet = AElf.wallet.getWalletByPrivateKey(this.config.wallet.privateKey);

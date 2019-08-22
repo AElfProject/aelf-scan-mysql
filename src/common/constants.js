@@ -3,6 +3,7 @@
  * @author atom-yang
  * @date 2019-07-24
  */
+const AElf = require('aelf-sdk');
 const utils = require('../common/utils');
 
 const TABLE_NAME = {
@@ -120,6 +121,32 @@ if (utils.isProd) {
   // eslint-disable-next-line global-require
   config = require('../../config.dev');
 }
+
+function getContractAddress(contracts) {
+  const contractAddress = {};
+  const wallet = AElf.wallet.getWalletByPrivateKey(config.wallet.privateKey);
+  const aelf = new AElf(new AElf.providers.HttpProvider(config.scan.host));
+  const {
+    GenesisContractAddress
+  } = aelf.chain.getChainStatus({
+    sync: true
+  });
+  const genContract = aelf.chain.contractAt(GenesisContractAddress, wallet, {
+    sync: true
+  });
+
+  Object.entries(contracts).forEach(([key, value]) => {
+    contractAddress[key] = genContract.GetContractAddressByName.call(AElf.utils.sha256(value), {
+      sync: true
+    });
+  });
+  console.log(contractAddress);
+  return contractAddress;
+}
+
+config.contracts = {
+  ...getContractAddress(config.contracts)
+};
 
 module.exports = {
   TABLE_NAME,

@@ -41,9 +41,9 @@ module.exports = {
   },
   contracts: {
     // Token合约可以通过getContractAddressByName来获取
-    token: 'WnV9Gv3gioSh3Vgaw8SSB96nV8fWUNxuVozCf6Y14e7RXyGaM',
-    resource: 'Acv7j84Ghi19JesSBQ8d56XenwCrJ5VBPvrS4mthtbuBjYtXR',
-    tokenConverter: 'Acv7j84Ghi19JesSBQ8d56XenwCrJ5VBPvrS4mthtbuBjYtXR'
+    token: 'AElf.ContractNames.Token',
+    resource: 'AElf.ContractNames.TokenConverter',
+    tokenConverter: 'AElf.ContractNames.TokenConverter'
   },
   tps: {
     sql: {
