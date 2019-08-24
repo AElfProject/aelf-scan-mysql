@@ -22,7 +22,7 @@ function isResourceTransaction(transaction) {
     return false;
   }
   if (!transaction.Transaction) {
-    console.warn(`${moment().format()} empty transaction ${JSON.stringify(transaction)}`);
+    console.warn(`${moment().format()} empty transaction ${JSON.stringify(transaction, null, 2)}`);
   }
   const { To, MethodName } = transaction.Transaction;
   return To === config.contracts.resource && (MethodName === 'Buy' || MethodName === 'Sell');

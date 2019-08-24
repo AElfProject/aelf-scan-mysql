@@ -33,7 +33,7 @@ module.exports = {
   scan: {
     interval: 8000,
     concurrentQueryLimit: 30,
-    host: 'http://13.231.179.27:8000',
+    host: 'http://192.168.197.18:8000',
     maxInsert: 210
   },
   wallet: {

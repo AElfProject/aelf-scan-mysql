@@ -39,5 +39,5 @@ async function sendEmails(message = '') {
 }
 
 module.exports = {
-  sendEmails
+  sendEmails: process.env.NODE_ENV === 'production' ? sendEmails : () => {}
 };
