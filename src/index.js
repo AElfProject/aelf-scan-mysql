@@ -49,22 +49,18 @@ class CustomInsert {
     const options = await this.getConfig();
     options.aelfInstance = this.aelf;
     this.scanner = new Scanner(new DBOperation({}, this.sqlQuery), options);
-    this.scanner.start().then(() => {
-      // 采集tps信息
+    try {
+      await this.scanner.start();
       console.log('start loop');
-      return new Promise(resolve => {
-        setTimeout(() => {
-          resolve(tps.init());
-        }, 120000);
-      });
-    }).catch(async err => {
-      // 错误处理，重启
-      // todo: 日志记录，pm2相关
-      console.log(err);
+      setTimeout(() => {
+        console.log('start count tps');
+        tps.init();
+      }, 120000);
+    } catch (err) {
+      console.warn(JSON.stringify(err, null, 2));
       await sendEmails(err);
-      console.log('send mail successfully');
       throw err;
-    });
+    }
   }
 
   cleanup() {
@@ -102,8 +98,10 @@ class CustomInsert {
     console.log(`missing heights in confirmed blocks ${JSON.stringify(missingHeights)}`);
     return {
       ...config.scan,
-      startHeight: maxHeight + 1,
-      missingHeightList: missingHeights.slice()
+      // startHeight: maxHeight + 1,
+      // missingHeightList: missingHeights.slice(),
+      startHeight: 500000,
+      missingHeightList: []
     };
   }
 

@@ -64,15 +64,13 @@ class DBOperation extends DBBaseOperation {
 
   async insertHeight(data, isConfirmed = true) {
     // insert confirmed blocks and transactions
-    // eslint-disable-next-line no-restricted-syntax
-    for (const index of Object.keys(data.blocks)) {
-      const item = {
-        block: data.blocks[index],
-        transactions: data.txs[index]
-      };
-      // eslint-disable-next-line no-await-in-loop
-      await this.query.insertBlocksAndTransactions(item, isConfirmed);
+    if (data.blocks.length === 0) {
+      return;
     }
+    await this.query.insertBlocksAndTransactions({
+      blocks: data.blocks,
+      transactions: data.txs
+    }, isConfirmed);
   }
 
   async insertLoop(data) {

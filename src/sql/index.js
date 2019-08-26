@@ -38,6 +38,22 @@ class Query {
     };
   }
 
+  static prepareInsertParams(insertValues = [], keys) {
+    const valuesBlank = `(${keys.map(() => '?').join(',')})`;
+    const valuesStr = [];
+    const values = [];
+    const keysStr = `(${keys.join(',')})`;
+    insertValues.forEach(item => {
+      values.push(...keys.map(v => item[v]));
+      valuesStr.push(valuesBlank);
+    });
+    return {
+      keysStr,
+      values,
+      valuesStr: valuesStr.join(',')
+    };
+  }
+
   async initCounts() {
     const countsKeys = Object.keys(this.tableKeys);
     const counts = await this.getCounts(countsKeys);
@@ -159,17 +175,14 @@ class Query {
     }
     const keys = TABLE_COLUMNS.CONTRACT;
     const tableName = TABLE_NAME.CONTRACT;
-    const valuesBlank = `(${keys.map(() => '?').join(',')})`;
-    const valuesStr = [];
-    const values = [];
-    const keysStr = `(${keys.join(',')})`;
+    const {
+      valuesStr,
+      keysStr,
+      values
+    } = Query.prepareInsertParams(transactions, keys);
 
-    transactions.forEach(item => {
-      values.push(...keys.map(v => item[v]));
-      valuesStr.push(valuesBlank);
-    });
     // eslint-disable-next-line max-len
-    const sql = `insert into ${tableName} ${keysStr} VALUES ${valuesStr.join(',')} ON DUPLICATE KEY UPDATE contract_address=VALUES(contract_address);`;
+    const sql = `insert into ${tableName} ${keysStr} VALUES ${valuesStr} ON DUPLICATE KEY UPDATE contract_address=VALUES(contract_address);`;
     await this.query(sql, values, connection);
   }
 
@@ -179,74 +192,81 @@ class Query {
     }
     const keys = isConfirmed ? TABLE_COLUMNS.RESOURCE_CONFIRMED : TABLE_COLUMNS.RESOURCE_UNCONFIRMED;
     const tableName = isConfirmed ? TABLE_NAME.RESOURCE_CONFIRMED : TABLE_NAME.RESOURCE_UNCONFIRMED;
-    const valuesBlank = `(${keys.map(() => '?').join(',')})`;
-    const valuesStr = [];
-    const values = [];
-    const keysStr = `(${keys.join(',')})`;
-
-    transactions.forEach(item => {
-      values.push(...keys.map(v => item[v]));
-      valuesStr.push(valuesBlank);
-    });
+    const {
+      valuesStr,
+      keysStr,
+      values
+    } = Query.prepareInsertParams(transactions, keys);
     // eslint-disable-next-line max-len
-    const sql = `insert into ${tableName} ${keysStr} VALUES ${valuesStr.join(',')} ON DUPLICATE KEY UPDATE tx_id=VALUES(tx_id);`;
+    const sql = `insert into ${tableName} ${keysStr} VALUES ${valuesStr} ON DUPLICATE KEY UPDATE tx_id=VALUES(tx_id);`;
     await this.query(sql, values, connection);
   }
 
-  async insertBlocks(block, isConfirmed = true, connection = null) {
+  async insertBlocks(blocks = [], isConfirmed = true, connection = null) {
+    if (blocks.length === 0) {
+      return;
+    }
     const keys = isConfirmed ? TABLE_COLUMNS.BLOCKS_CONFIRMED : TABLE_COLUMNS.BLOCKS_UNCONFIRMED;
     const tableName = isConfirmed ? TABLE_NAME.BLOCKS_CONFIRMED : TABLE_NAME.BLOCKS_UNCONFIRMED;
-    const valuesBlank = `(${keys.map(() => '?').join(',')})`;
 
-    const keysStr = `(${keys.join(',')})`;
-    const values = keys.map(v => block[v]);
+    const {
+      valuesStr,
+      keysStr,
+      values
+    } = Query.prepareInsertParams(blocks, keys);
 
-    const sql = `insert into ${tableName} ${keysStr} VALUES ${valuesBlank}`
-      + 'ON DUPLICATE KEY UPDATE block_hash=VALUES(block_hash);';
+    // eslint-disable-next-line max-len
+    const sql = `insert into ${tableName} ${keysStr} VALUES ${valuesStr} ON DUPLICATE KEY UPDATE block_hash=VALUES(block_hash);`;
     await this.query(sql, values, connection);
   }
 
   async insertTransactions(transactions = [], isConfirmed = true, connection = null) {
+    if (transactions.length === 0) {
+      return;
+    }
     const keys = isConfirmed ? TABLE_COLUMNS.TRANSACTION_CONFIRMED : TABLE_COLUMNS.TRANSACTION_UNCONFIRMED;
     const tableName = isConfirmed ? TABLE_NAME.TRANSACTION_CONFIRMED : TABLE_NAME.TRANSACTION_UNCONFIRMED;
-    const valuesBlank = `(${keys.map(() => '?').join(',')})`;
-    const valuesStr = [];
-    const values = [];
-    const keysStr = `(${keys.join(',')})`;
-    transactions.forEach(item => {
-      values.push(...keys.map(v => item[v]));
-      valuesStr.push(valuesBlank);
-    });
-
+    const {
+      valuesStr,
+      keysStr,
+      values
+    } = Query.prepareInsertParams(transactions, keys);
     const sql = `insert into ${tableName} ${keysStr} VALUES ${valuesStr} ON DUPLICATE KEY UPDATE tx_id=VALUES(tx_id);`;
     await this.query(sql, values, connection);
   }
 
   async insertBlocksAndTransactions(data, isConfirmed = true) {
-    let { block } = data;
-    const { transactions } = data;
+    const { blocks, transactions } = data;
     const connection = await this.getConnection();
     await this.beginTransaction(connection);
 
     // block入库
-    block = blockFormatter(block);
+    const formattedBlocks = blocks.map(block => blockFormatter(block));
 
-    const resourceTransactions = transactions.filter(isResourceTransaction)
-      .map(v => resourceFormatter(v, block));
-    const tokenCreatedTransactions = transactions.filter(isTokenCreatedTransaction)
-      .map(v => contractTokenRelatedFormatter(v, block.chain_id));
+    const resourceTransactions = transactions
+      .map((v = [], i) => v
+        .filter(isResourceTransaction)
+        .map(resource => resourceFormatter(resource, formattedBlocks[i])))
+      .reduce((acc, i) => acc.concat(i), []);
 
-    const formattedTransactions = transactions.map(v => transactionFormatter(v, block));
+    const tokenCreatedTransactions = transactions
+      .map((v = [], i) => v
+        .filter(isTokenCreatedTransaction)
+        .map(token => contractTokenRelatedFormatter(token, formattedBlocks[i].chain_id)))
+      .reduce((acc, i) => acc.concat(i), []);
+
+    const formattedTransactions = transactions
+      .map((v = [], i) => v.map(tx => transactionFormatter(tx, formattedBlocks[i])))
+      .reduce((acc, i) => acc.concat(i), []);
 
     const txsLength = transactions.length;
     const contractTokenRelatedLength = tokenCreatedTransactions.length;
     const resourceLength = resourceTransactions.length;
 
-
     try {
       // 目前区分两种交易类型，token create，resource，单独入库，所有类型的交易均入库transactions
       await Promise.all([
-        this.insertBlocks(block, isConfirmed, connection),
+        this.insertBlocks(formattedBlocks, isConfirmed, connection),
         this.insertTransactions(formattedTransactions, isConfirmed, connection),
         this.insertResourceTransactions(resourceTransactions, isConfirmed, connection),
         this.insertContractToken(tokenCreatedTransactions, isConfirmed, connection)
@@ -256,7 +276,8 @@ class Query {
           console.log(`error happened when commit ${JSON.stringify(err)}`);
           connection.rollback(() => {
             connection.release();
-            console.log(`rollback at height ${block.block_height}, confirm status ${isConfirmed}`);
+            // eslint-disable-next-line max-len
+            console.log(`rollback from height ${formattedBlocks[0].block_height} to ${formattedBlocks[formattedBlocks.length - 1].block_height}, confirm status ${isConfirmed}`);
           });
         } else {
           if (isConfirmed) {
@@ -266,14 +287,16 @@ class Query {
             // todo: 有可能token transaction 不成功
           }
           connection.release();
-          console.log(`insert successfully at height ${block.block_height}, confirm status ${isConfirmed}`);
+          // eslint-disable-next-line max-len
+          console.log(`insert successfully from height ${formattedBlocks[0].block_height} to ${formattedBlocks[formattedBlocks.length - 1].block_height}, confirm status ${isConfirmed}`);
         }
       });
     } catch (e) {
       console.log(`error happened when insert ${JSON.stringify(e)}`);
       connection.rollback(() => {
         connection.release();
-        console.log(`rollback at height ${block.block_height}, confirm status ${isConfirmed}`);
+        // eslint-disable-next-line max-len
+        console.log(`rollback from height ${formattedBlocks[0].block_height} to ${formattedBlocks[formattedBlocks.length - 1].block_height}, confirm status ${isConfirmed}`);
       });
     }
   }
