@@ -104,10 +104,8 @@ class CustomInsert {
     console.log(`missing heights in confirmed blocks ${JSON.stringify(missingHeights)}`);
     return {
       ...config.scan,
-      // startHeight: maxHeight + 1,
-      // missingHeightList: missingHeights.slice(),
-      startHeight: 677000,
-      missingHeightList: []
+      startHeight: maxHeight + 1,
+      missingHeightList: missingHeights.slice()
     };
   }
 
