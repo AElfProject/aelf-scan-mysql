@@ -66,9 +66,9 @@ class Query {
     await this.redisQuery.init();
   }
 
-  async increaseCounts(txsLength, tokenLength, resourceLength) {
+  async increaseCounts(blocksLength, txsLength, tokenLength, resourceLength) {
     const { keys } = config.redis;
-    await this.redisQuery.promisifyCommand('incrby', keys.blocksCount, 1);
+    await this.redisQuery.promisifyCommand('incrby', keys.blocksCount, blocksLength);
     await this.redisQuery.promisifyCommand('incrby', keys.txsCount, txsLength);
     await this.redisQuery.promisifyCommand('incrby', keys.resourceCount, resourceLength);
     await this.redisQuery.promisifyCommand('incrby', keys.tokenCount, tokenLength);
@@ -262,7 +262,7 @@ class Query {
       .map((v = [], i) => v.map(tx => transactionFormatter(tx, formattedBlocks[i])))
       .reduce((acc, i) => acc.concat(i), []);
 
-    const txsLength = transactions.length;
+    const txsLength = formattedTransactions.length;
     const contractTokenRelatedLength = tokenCreatedTransactions.length;
     const resourceLength = resourceTransactions.length;
 
@@ -284,7 +284,7 @@ class Query {
           });
         } else {
           if (isConfirmed) {
-            await this.increaseCounts(txsLength, contractTokenRelatedLength, resourceLength);
+            await this.increaseCounts(formattedBlocks.length, txsLength, contractTokenRelatedLength, resourceLength);
           } else {
             // unconfirm
             // todo: 有可能token transaction 不成功
