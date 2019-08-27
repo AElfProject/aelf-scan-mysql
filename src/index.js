@@ -28,10 +28,16 @@ class CustomInsert {
     // process.on('SIGUSR1', this.cleanup);
     // process.on('SIGUSR2', this.cleanup);
     //
-    // process.on('uncaughtException', err => {
-    //   console.log(err);
-    //   this.restart();
-    // });
+    process.on('unhandledRejection', async err => {
+      console.log('unhandledRejection');
+      await sendEmails(err);
+      this.cleanup();
+    });
+    process.on('uncaughtException', async err => {
+      console.log('uncaughtException');
+      await sendEmails(err);
+      this.cleanup();
+    });
     this.config = options;
     this.aelf = new AElf(new AElf.providers.HttpProvider(this.config.scan.host, 3000));
     this.wallet = AElf.wallet.getWalletByPrivateKey(this.config.wallet.privateKey);
@@ -57,9 +63,9 @@ class CustomInsert {
         tps.init();
       }, 120000);
     } catch (err) {
-      console.warn(JSON.stringify(err, null, 2));
+      console.warn(`root catch ${err.toString()}`);
       await sendEmails(err);
-      throw err;
+      this.cleanup();
     }
   }
 
@@ -98,8 +104,10 @@ class CustomInsert {
     console.log(`missing heights in confirmed blocks ${JSON.stringify(missingHeights)}`);
     return {
       ...config.scan,
-      startHeight: maxHeight + 1,
-      missingHeightList: missingHeights.slice()
+      // startHeight: maxHeight + 1,
+      // missingHeightList: missingHeights.slice(),
+      startHeight: 677000,
+      missingHeightList: []
     };
   }
 
