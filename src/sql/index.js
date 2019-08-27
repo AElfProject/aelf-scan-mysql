@@ -147,6 +147,9 @@ class Query {
     if (heights.length === 0 || heights.length - 1 === +heights[heights.length - 1]) {
       return [];
     }
+    if (heights[0] !== 1) {
+      heights.unshift(1);
+    }
     const missingHeights = [];
     for (let i = 1; i < heights.length; i++) {
       const diff = heights[i] - heights[i - 1];
