@@ -61,7 +61,7 @@ function contractTokenRelatedFormatter(tokenInfo, chainId) {
     BlockHash,
     TransactionId
   } = tokenInfo;
-  const params = JSON.parse(Transaction.params);
+  const params = JSON.parse(Transaction.Params);
   return {
     contract_address: Transaction.To,
     chain_id: chainId,
@@ -81,7 +81,7 @@ function resourceFormatter(transaction, block) {
     TransactionId
   } = transaction;
   const { From, MethodName } = Transaction;
-  const params = JSON.parse(Transaction.params);
+  const params = JSON.parse(Transaction.Params);
   const eventsDeserialize = deserializeEvents(transaction.Logs);
   const tradeDetail = eventsDeserialize.find(item => item.name === 'tokenTrade');
   return {
