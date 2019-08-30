@@ -104,25 +104,13 @@ class Query {
 
   getConnection() {
     return new Promise((resolve, reject) => {
-      this.pool.getConnection((err, connection) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve(connection);
-      });
+      this.pool.getConnection((err, connection) => (err ? reject(err) : resolve(connection)));
     });
   }
 
   beginTransaction(connection) {
     return new Promise((resolve, reject) => {
-      connection.beginTransaction(err => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve();
-      });
+      connection.beginTransaction(err => (err ? reject(err) : resolve()));
     });
   }
 

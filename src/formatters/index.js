@@ -5,6 +5,9 @@
  */
 const Long = require('long');
 const deserializeEvents = require('../deserialize/deserializeEvents');
+const {
+  deserializeCrossChainTransferInput
+} = require('../deserialize/deserializeTokenContract');
 const { config } = require('../common/constants');
 
 function blockFormatter(block) {
@@ -140,23 +143,42 @@ function transactionFormatter(transaction, blockInfo) {
   };
 
   // 这一套规则是针对token合约的。
-  const tokenMethodCheck = ['Initialize', 'Transfer', 'InitialBalance', 'Create'].includes(txInfo.MethodName);
+  const tokenMethodCheck = [
+    'Initialize', 'Transfer', 'InitialBalance', 'Create', 'CrossChainTransfer', 'CrossChainReceiveToken'
+  ].includes(txInfo.MethodName);
 
   if (txInfo.To === config.contracts.resource) {
     output.params = txInfo.Params;
   } else if (txInfo.To === config.contracts.token && tokenMethodCheck) {
-    const params = JSON.parse(txInfo.Params);
+    const paramsObject = JSON.parse(txInfo.Params);
     output.params = txInfo.Params;
     switch (method) {
       case 'Create':
         // 查支出时，需要排除掉method=Initialize这种情况。
         output.params_to = txInfo.To;
-        output.quantity = params.totalSupply || 0;
+        output.quantity = paramsObject.totalSupply || 0;
         break;
       case 'Transfer':
-        output.params_to = params.to || 'tx failed';
-        output.quantity = params.amount || 0;
+        output.params_to = paramsObject.to || 'tx failed';
+        output.quantity = paramsObject.amount || 0;
         break;
+      case 'CrossChainTransfer':
+        output.params_to = paramsObject.to || 'tx failed';
+        output.quantity = paramsObject.amount || 0;
+        break;
+      case 'CrossChainReceiveToken': {
+        const crossTransfer = deserializeCrossChainTransferInput(paramsObject.transferTransactionBytes);
+        output.params_to = crossTransfer.to || 'tx failed';
+        output.quantity = crossTransfer.amount || 0;
+
+        output.params = paramsObject;
+        output.params.merklePath = null;
+        output.params.transferTransactionBytes = null;
+        output.params.transferTx = crossTransfer;
+        output.params = JSON.stringify(output.params);
+        console.log('output: ', output);
+        break;
+      }
       default:
         break;
     }

@@ -4,6 +4,7 @@
  *
  * 根据调用contract的情况来选择不同的proto来反序列化。
  */
+// 20190830: just a demo FYI.
 const AElf = require('aelf-sdk');
 const Long = require('long'); // For Token Contract
 
