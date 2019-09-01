@@ -176,7 +176,6 @@ function transactionFormatter(transaction, blockInfo) {
         output.params.transferTransactionBytes = null;
         output.params.transferTx = crossTransfer;
         output.params = JSON.stringify(output.params);
-        console.log('output: ', output);
         break;
       }
       default:
