@@ -43,7 +43,7 @@ class Query {
     const valuesStr = [];
     const values = [];
     const keysStr = `(${keys.join(',')})`;
-    insertValues.forEach(item => {
+    insertValues.sort((a, b) => a.block_height - b.block_height).forEach(item => {
       values.push(...keys.map(v => item[v]));
       valuesStr.push(valuesBlank);
     });
