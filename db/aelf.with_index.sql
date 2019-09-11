@@ -124,7 +124,7 @@ CREATE TABLE `resource_0` (
   `chain_id` varchar(64) NOT NULL,
   `block_height` int(32) NOT NULL,
   `tx_status` varchar(64) NOT NULL,
-  `time` bigint(64) NOT NULL,
+  `time` varchar(64) NOT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `tx_id` (`tx_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -145,7 +145,7 @@ CREATE TABLE `resource_unconfirmed` (
   `chain_id` varchar(64) NOT NULL,
   `block_height` int(32) NOT NULL,
   `tx_status` varchar(64) NOT NULL,
-  `time` bigint(64) NOT NULL,
+  `time` varchar(64) NOT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `tx_id` (`tx_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -156,8 +156,8 @@ CREATE TABLE `resource_unconfirmed` (
 DROP TABLE IF EXISTS `tps_0`;
 CREATE TABLE `tps_0` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `start` varchar(255) NOT NULL COMMENT 'start time, fromblocks_0',
-  `end` varchar(255) NOT NULL COMMENT 'start + N(the value of key: type)',
+  `start` varchar(64) NOT NULL COMMENT 'start time, fromblocks_0',
+  `end` varchar(64) NOT NULL COMMENT 'start + N(the value of key: type)',
   `txs` int(32) NOT NULL COMMENT 'tx count during N minutes',
   `blocks` int(32) NOT NULL COMMENT 'block count during N minutes',
   `tps` int(32) NOT NULL COMMENT 'transactions per second',
