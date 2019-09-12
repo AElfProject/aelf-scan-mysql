@@ -45,10 +45,18 @@ CREATE TABLE `blocks_0` (
   `merkle_root_state` varchar(64) NOT NULL,
   `time` varchar(64) NOT NULL COMMENT '直接转存节点来的',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `block_hash` (`block_hash`) USING BTREE,
-  UNIQUE KEY `block_height` (`block_height`) USING BTREE,
+  KEY `hash` (`block_hash`) USING BTREE,
+  KEY `block_height` (`block_height`) USING BTREE,
   KEY `time` (`time`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 PARTITION BY RANGE COLUMNS(`id`) (
+    PARTITION p0_1 VALUES LESS THAN (10000001),
+    PARTITION p1_2 VALUES LESS THAN (20000001),
+    PARTITION p2_3 VALUES LESS THAN (30000001),
+    PARTITION p3_4 VALUES LESS THAN (40000001),
+    PARTITION p4_5 VALUES LESS THAN (50000001),
+    PARTITION p5_6 VALUES LESS THAN (60000001),
+    PARTITION p60 VALUES LESS THAN MAXVALUE
+);
 
 -- ----------------------------
 -- Table structure for blocks_unconfirmed
@@ -65,8 +73,8 @@ CREATE TABLE `blocks_unconfirmed` (
   `merkle_root_state` varchar(64) NOT NULL,
   `time` varchar(64) NOT NULL COMMENT '直接转存节点来的',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `block_hash` (`block_hash`) USING BTREE,
-  UNIQUE KEY `block_height` (`block_height`) USING BTREE,
+  KEY `block_hash` (`block_hash`) USING BTREE,
+  KEY `block_height` (`block_height`) USING BTREE,
   KEY `time` (`time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -126,8 +134,20 @@ CREATE TABLE `resource_0` (
   `tx_status` varchar(64) NOT NULL,
   `time` varchar(64) NOT NULL,
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `tx_id` (`tx_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  KEY `tx_id` (`tx_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 PARTITION BY RANGE COLUMNS(`id`) (
+    PARTITION p0_1 VALUES LESS THAN (10000001),
+    PARTITION p1_2 VALUES LESS THAN (20000001),
+    PARTITION p2_3 VALUES LESS THAN (30000001),
+    PARTITION p3_4 VALUES LESS THAN (40000001),
+    PARTITION p4_5 VALUES LESS THAN (50000001),
+    PARTITION p5_6 VALUES LESS THAN (60000001),
+    PARTITION p6_7 VALUES LESS THAN (70000001),
+    PARTITION p7_8 VALUES LESS THAN (80000001),
+    PARTITION p8_9 VALUES LESS THAN (90000001),
+    PARTITION p9_10 VALUES LESS THAN (100000001),
+    PARTITION p10 VALUES LESS THAN MAXVALUE
+);
 
 -- ----------------------------
 -- Table structure for resource_unconfirmed
@@ -147,8 +167,8 @@ CREATE TABLE `resource_unconfirmed` (
   `tx_status` varchar(64) NOT NULL,
   `time` varchar(64) NOT NULL,
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `tx_id` (`tx_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  KEY `tx_id` (`tx_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Table structure for tps_0
@@ -187,13 +207,26 @@ CREATE TABLE `transactions_0` (
   `tx_status` varchar(64) NOT NULL,
   `time` varchar(64) NOT NULL COMMENT 'time of blocks',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `tx_id` (`tx_id`) USING BTREE,
+  KEY `tx_id` (`tx_id`),
   KEY `params_to` (`params_to`),
+  KEY `block_hash` (`block_hash`),
   KEY `method` (`method`),
   KEY `address_to` (`address_to`),
   KEY `address_from` (`address_from`),
   KEY `block_height` (`block_height`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 PARTITION BY RANGE COLUMNS(id) (
+    PARTITION p0_1 VALUES LESS THAN (10000001),
+    PARTITION p1_2 VALUES LESS THAN (20000001),
+    PARTITION p2_3 VALUES LESS THAN (30000001),
+    PARTITION p3_4 VALUES LESS THAN (40000001),
+    PARTITION p4_5 VALUES LESS THAN (50000001),
+    PARTITION p5_6 VALUES LESS THAN (60000001),
+    PARTITION p6_7 VALUES LESS THAN (70000001),
+    PARTITION p7_8 VALUES LESS THAN (80000001),
+    PARTITION p8_9 VALUES LESS THAN (90000001),
+    PARTITION p9_10 VALUES LESS THAN (100000001),
+    PARTITION p10 VALUES LESS THAN MAXVALUE
+);
 
 -- ----------------------------
 -- Table structure for transactions_unconfirmed
@@ -214,8 +247,9 @@ CREATE TABLE `transactions_unconfirmed` (
   `tx_status` varchar(64) NOT NULL,
   `time` varchar(64) NOT NULL COMMENT 'time of blocks',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `tx_id` (`tx_id`) USING BTREE,
+  KEY `tx_id` (`tx_id`),
   KEY `params_to` (`params_to`),
+  KEY `block_hash` (`block_hash`),
   KEY `method` (`method`),
   KEY `address_to` (`address_to`),
   KEY `address_from` (`address_from`),
