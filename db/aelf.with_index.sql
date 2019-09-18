@@ -272,4 +272,27 @@ CREATE TABLE `user` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
+DROP TABLE IF EXISTS `vote_teams`;
+CREATE TABLE `vote_teams`(
+  `id`               bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `public_key`       VARCHAR(255) NOT NULL,
+  `address`          VARCHAR(64)  NOT NULL,
+  `name`             VARCHAR(64)  NOT NULL,
+  `avatar`           VARCHAR(255) DEFAULT NULL,
+  `intro`            TEXT         DEFAULT NULL,
+  `tx_id`            VARCHAR(64)  DEFAULT NULL,
+  `is_active`        BOOLEAN      DEFAULT FALSE,
+  `socials`          JSON,
+  `official_website` VARCHAR(255) DEFAULT NULL,
+  `location`         VARCHAR(255) DEFAULT NULL,
+  `mail`             VARCHAR(255) DEFAULT NULL,
+  `update_time`      DATETIME     DEFAULT CURRENT_TIMESTAMP(),
+  PRIMARY KEY (`id`),
+  KEY `public_key` (`public_key`) USING BTREE,
+  KEY `address` (`address`) USING BTREE,
+  UNIQUE KEY key_time (`public_key`, `update_time`) USING BTREE
+) ENGINE = InnoDB
+  auto_increment = 1
+  DEFAULT CHARSET = utf8;
+
 SET FOREIGN_KEY_CHECKS = 1;
