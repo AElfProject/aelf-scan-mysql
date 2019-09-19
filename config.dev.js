@@ -33,12 +33,13 @@ module.exports = {
   scan: {
     interval: 8000,
     concurrentQueryLimit: 30,
-    host: 'http://192.168.197.18:8000',
+    host: 'http://13.231.179.27:8000',
     maxInsert: 210
   },
   wallet: {
     privateKey: 'f6e512a3c259e5f9af981d7f99d245aa5bc52fe448495e0b0dd56e8406be6f71'
   },
+  nativeTokenSymbol: 'TELF',
   contracts: {
     // Token合约可以通过getContractAddressByName来获取
     token: 'AElf.ContractNames.Token',

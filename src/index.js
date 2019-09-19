@@ -87,7 +87,7 @@ class CustomInsert {
       .GetContractAddressByName.call(AElf.utils.sha256('AElf.ContractNames.Token'));
     const tokenContract = await this.aelf.chain.contractAt(tokenAddress, this.wallet);
     const tokenInfo = await tokenContract.GetTokenInfo.call({
-      symbol: 'ELF'
+      symbol: config.nativeTokenSymbol
     });
     return [
       tokenAddress,
