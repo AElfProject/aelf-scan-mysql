@@ -86,9 +86,7 @@ class CustomInsert {
     const tokenAddress = await genesisContract
       .GetContractAddressByName.call(AElf.utils.sha256('AElf.ContractNames.Token'));
     const tokenContract = await this.aelf.chain.contractAt(tokenAddress, this.wallet);
-    const tokenInfo = await tokenContract.GetTokenInfo.call({
-      symbol: config.nativeTokenSymbol
-    });
+    const tokenInfo = await tokenContract.GetNativeTokenInfo.call();
     return [
       tokenAddress,
       ChainId,
