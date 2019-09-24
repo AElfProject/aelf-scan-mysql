@@ -20,6 +20,8 @@ class TPS {
     });
     this.confirmedSql = `select * from ${TABLE_NAME.BLOCKS_CONFIRMED} where time between ? and ?`;
     this.unconfirmedSql = `select * from ${TABLE_NAME.BLOCKS_UNCONFIRMED} where time between ? and ?`;
+    this.resourceConfirmedSql = `select * from ${TABLE_NAME.RESOURCE_CONFIRMED} where time between ? and ?`;
+    this.resourceUnconfirmedSql = `select * from ${TABLE_NAME.RESOURCE_CONFIRMED} where time between ? and ?`;
     this.lastCurrentTime = moment().unix();
   }
 
@@ -75,21 +77,8 @@ class TPS {
     await this.queryInLoop(currentTime);
   }
 
-  async handleBatch(data) {
-    const { blocks, startTime, endTime } = data;
-    // eslint-disable-next-line max-len
-    console.log(`handle batch from ${this.formatTime(startTime)} to ${this.formatTime(endTime)} with ${blocks.length} blocks`);
-    let insertValues = new Array(Math.floor((endTime - startTime) / this.config.interval))
-      .fill(1)
-      .map((_, i) => ({
-        start: this.formatTime(startTime + i * this.config.interval),
-        end: this.formatTime(startTime + (i + 1) * this.config.interval),
-        txs: 0,
-        blocks: 0,
-        tps: 0,
-        tpm: 0,
-        type: this.config.minutes
-      }));
+  async insertBlocks(blocks, startTime, insertValues) {
+    let result = insertValues.map(v => ({ ...v }));
     // eslint-disable-next-line no-restricted-syntax
     for (const block of blocks) {
       // 对于毫秒会全部丢弃
@@ -100,11 +89,11 @@ class TPS {
       if (mod === 0 && index !== 0) {
         index -= 1;
       }
-      const currentItem = insertValues[index];
+      const currentItem = result[index];
       currentItem.txs += parseInt(block.tx_count, 10);
       currentItem.blocks += 1;
     }
-    insertValues = insertValues.map(v => {
+    result = result.map(v => {
       const tps = v.txs / this.config.interval;
       const tpm = tps * 60;
       return {
@@ -113,11 +102,101 @@ class TPS {
         tpm
       };
     });
-    console.log(`inserted values length ${insertValues.length}`);
-    for (let i = 0; i < insertValues.length; i += this.config.maxInsert) {
-      // eslint-disable-next-line no-await-in-loop
-      await this.insertTpsBatch(insertValues.slice(i, i + this.config.maxInsert));
+    console.log(`inserted values length ${result.length}`);
+    for (let i = 0; i < result.length; i += this.config.maxInsert) {
+      // eslint-disable-next-line no-await-in-loop,max-len
+      await this.insertTpsBatch(result.slice(i, i + this.config.maxInsert), TABLE_NAME.TRANS_PER_SECOND, TABLE_COLUMNS.TRANS_PER_SECOND);
     }
+  }
+
+  async insertResourceByMethodAndType(resources, startTime, insertValues, type, method) {
+    let result = insertValues.map(v => ({
+      ...v,
+      block_height: {},
+      method,
+      resource_type: type,
+    }));
+    // eslint-disable-next-line no-restricted-syntax
+    for (const resource of resources) {
+      // 对于毫秒会全部丢弃
+      const time = moment(resource.time).unix();
+      let index = Math.floor((time - startTime) / this.config.interval);
+      const mod = (time - startTime) % this.config.interval;
+      // 统计规则为时间范围左开右闭，则与区域开始时间相同的区块不计数，计入上一个时间段
+      if (mod === 0 && index !== 0) {
+        index -= 1;
+      }
+      const currentItem = result[index];
+      currentItem.txs += 1;
+      currentItem.block_height[resource.block_height] = 1;
+    }
+    result = result.map(v => {
+      const tps = v.txs / this.config.interval;
+      const tpm = tps * 60;
+      const blocks = Object.keys(v.block_height).length;
+      const item = {
+        ...v,
+        tps,
+        tpm,
+        blocks
+      };
+      delete item.block_height;
+      return item;
+    });
+    console.log(`inserted resources with type ${type}, method ${method} values length ${result.length}`);
+    for (let i = 0; i < result.length; i += this.config.maxInsert) {
+      // eslint-disable-next-line no-await-in-loop,max-len
+      await this.insertTpsBatch(result.slice(i, i + this.config.maxInsert), TABLE_NAME.RESOURCE_TPS, TABLE_COLUMNS.RESOURCE_TPS);
+    }
+  }
+
+  async insertResource(resources, startTime, insertValues) {
+    const result = insertValues.map(v => ({
+      ...v
+    }));
+    const types = [
+      'CPU',
+      'RAM',
+      'NET',
+      'STO'
+    ];
+    const methods = [
+      'Buy',
+      'Sell'
+    ];
+    // eslint-disable-next-line no-restricted-syntax
+    for (const type of types) {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const method of methods) {
+        const list = resources.filter(v => v.method === method && v.type === type);
+        // eslint-disable-next-line no-await-in-loop
+        await this.insertResourceByMethodAndType(list, startTime, result, type, method);
+      }
+    }
+  }
+
+  async handleBatch(data) {
+    const {
+      resources,
+      blocks,
+      startTime,
+      endTime
+    } = data;
+    // eslint-disable-next-line max-len
+    console.log(`handle batch from ${this.formatTime(startTime)} to ${this.formatTime(endTime)} with ${blocks.length} blocks`);
+    const insertValues = new Array(Math.floor((endTime - startTime) / this.config.interval))
+      .fill(1)
+      .map((_, i) => ({
+        start: this.formatTime(startTime + i * this.config.interval),
+        end: this.formatTime(startTime + (i + 1) * this.config.interval),
+        txs: 0,
+        blocks: 0,
+        tps: 0,
+        tpm: 0,
+        type: this.config.minutes
+      }));
+    await this.insertBlocks(blocks, startTime, insertValues);
+    await this.insertResource(resources, startTime, insertValues.map(v => ({ ...v })));
   }
 
   async queryInLoop(startTime) {
@@ -179,38 +258,49 @@ class TPS {
     console.log(`getResultPerInterval, is in loop ${isLoop}, query from ${this.formatTime(startTime)} to ${this.formatTime(endTime)}`);
     // 只有循环查询的情况下才需要查询unconfirmed
     let blocks;
+    let resources;
     const startTimeUTC = this.formatTime(startTime);
     const endTimeUTC = this.formatTime(endTime);
     const sqlValues = [startTimeUTC, endTimeUTC];
     blocks = await this.query.query(this.confirmedSql, sqlValues);
+    resources = await this.query.query(this.resourceConfirmedSql, sqlValues);
     // eslint-disable-next-line max-len
     if (isLoop) {
       const unconfirmedBlocks = await this.query.query(this.unconfirmedSql, sqlValues);
-      if (unconfirmedBlocks.length === 0 || blocks.length === 0) {
-        blocks = blocks.length ? blocks : unconfirmedBlocks;
-      } else {
-        // 合并去重
-        const unionBlocks = [...unconfirmedBlocks, ...blocks];
-        const uniqueBlocksHashes = {};
-        unionBlocks.forEach(v => {
-          unionBlocks[v.block_hash] = v;
-        });
-        blocks = Object.values(uniqueBlocksHashes);
-      }
+      const unconfirmedResource = await this.query.query(this.resourceUnconfirmedSql, sqlValues);
+      blocks = this.removeDuplicateList(blocks, unconfirmedBlocks, 'block_hash');
+      resources = this.removeDuplicateList(resources, unconfirmedResource, 'tx_id');
     }
     return {
+      resources,
       blocks,
       startTime,
       endTime
     };
   }
 
-  async insertTpsBatch(tpsList = []) {
+  removeDuplicateList(confirmed, unConfirmed, id) {
+    let result;
+    if (unConfirmed.length === 0 || confirmed.length === 0) {
+      result = confirmed.length ? confirmed : unConfirmed;
+    } else {
+      // 合并去重
+      const union = [...unConfirmed, ...confirmed];
+      const unique = {};
+      union.forEach(v => {
+        unique[id] = v;
+      });
+      result = Object.values(unique);
+    }
+    return result;
+  }
+
+  async insertTpsBatch(tpsList = [], tableName, columns) {
     console.log('insert', tpsList.length);
     if (tpsList.length === 0) {
       return;
     }
-    const keys = this.config.tableKeys;
+    const keys = columns;
     const valuesBlank = `(${keys.map(() => '?').join(',')})`;
 
     const values = [];
@@ -222,7 +312,7 @@ class TPS {
       valuesStr.push(valuesBlank);
     });
     // eslint-disable-next-line max-len
-    const sql = `insert into ${this.config.tableName} ${keysStr} VALUES ${valuesStr.join(',')} ON DUPLICATE KEY UPDATE start=(start);`;
+    const sql = `insert into ${tableName} ${keysStr} VALUES ${valuesStr.join(',')} ON DUPLICATE KEY UPDATE start=(start);`;
     await this.query.query(sql, values);
   }
 
@@ -236,5 +326,7 @@ const tps = new TPS({
   tableName: TABLE_NAME.TRANS_PER_SECOND,
   tableKeys: TABLE_COLUMNS.TRANS_PER_SECOND
 });
+
+tps.init();
 
 module.exports = tps;

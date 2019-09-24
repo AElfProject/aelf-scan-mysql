@@ -14,7 +14,8 @@ const TABLE_NAME = {
   RESOURCE_UNCONFIRMED: 'resource_unconfirmed',
   BLOCKS_CONFIRMED: 'blocks_0',
   BLOCKS_UNCONFIRMED: 'blocks_unconfirmed',
-  TRANS_PER_SECOND: 'tps_0'
+  TRANS_PER_SECOND: 'tps_0',
+  RESOURCE_TPS: 'tps_resource'
 };
 
 const TABLE_COLUMNS = {
@@ -110,6 +111,17 @@ const TABLE_COLUMNS = {
     'tps',
     'tpm',
     'type'
+  ],
+  RESOURCE_TPS: [
+    'start',
+    'end',
+    'txs',
+    'blocks',
+    'tps',
+    'tpm',
+    'type',
+    'resource_type',
+    'method'
   ]
 };
 

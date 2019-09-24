@@ -15,3 +15,5 @@ TRUNCATE TABLE tps_0;
 TRUNCATE TABLE blocks_0;
 
 TRUNCATE TABLE blocks_unconfirmed;
+
+TRUNCATE TABLE tps_resource;

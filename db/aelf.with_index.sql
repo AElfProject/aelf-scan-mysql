@@ -175,8 +175,8 @@ CREATE TABLE `resource_unconfirmed` (
 -- ----------------------------
 DROP TABLE IF EXISTS `tps_0`;
 CREATE TABLE `tps_0` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `start` varchar(64) NOT NULL COMMENT 'start time, fromblocks_0',
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `start` varchar(64) NOT NULL COMMENT 'start time, from blocks_0',
   `end` varchar(64) NOT NULL COMMENT 'start + N(the value of key: type)',
   `txs` int(32) NOT NULL COMMENT 'tx count during N minutes',
   `blocks` int(32) NOT NULL COMMENT 'block count during N minutes',
@@ -187,6 +187,28 @@ CREATE TABLE `tps_0` (
   UNIQUE KEY `start` (`start`) USING BTREE,
   UNIQUE KEY `end` (`end`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Table structure for tps_0
+-- ----------------------------
+DROP TABLE IF EXISTS `tps_resource`;
+CREATE TABLE `tps_resource` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `start`  varchar(64) NOT NULL COMMENT 'start time, from transactions',
+  `end`    varchar(64) NOT NULL COMMENT 'start + N(the value of key: type)',
+  `txs`    int(32)     NOT NULL COMMENT 'tx count during N minutes',
+  `blocks` int(32)     NOT NULL COMMENT 'block count during N minutes',
+  `tps`    int(32)     NOT NULL COMMENT 'transactions per second',
+  `tpm`    int(32)     NOT NULL COMMENT 'transactions per minute',
+  `type`   int(16)     NOT NULL COMMENT 'N, interval time',
+  `resource_type` VARCHAR(64) NOT NULL COMMENT 'resource type',
+  `method` VARCHAR(64) NOT NULL COMMENT 'resource method',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `start` (`start`) USING BTREE,
+  KEY `end` (`end`) USING BTREE,
+  KEY `resource_type` (`resource_type`),
+  KEY `method` (`method`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Table structure for transactions_0
