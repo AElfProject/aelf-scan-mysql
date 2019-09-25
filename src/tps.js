@@ -327,6 +327,4 @@ const tps = new TPS({
   tableKeys: TABLE_COLUMNS.TRANS_PER_SECOND
 });
 
-tps.init();
-
 module.exports = tps;
