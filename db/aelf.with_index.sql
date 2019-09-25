@@ -312,7 +312,8 @@ CREATE TABLE `vote_teams`(
   PRIMARY KEY (`id`),
   KEY `public_key` (`public_key`) USING BTREE,
   KEY `address` (`address`) USING BTREE,
-  UNIQUE KEY key_time (`public_key`, `update_time`) USING BTREE
+  KEY `name` (`name`),
+  UNIQUE KEY `key_time` (`public_key`, `update_time`) USING BTREE
 ) ENGINE = InnoDB
   auto_increment = 1
   DEFAULT CHARSET = utf8;
