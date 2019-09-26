@@ -10,13 +10,15 @@ const Counter = require('../redis/index');
 const { config } = require('../common/constants');
 const {
   isResourceTransaction,
-  isTokenCreatedTransaction
+  isTokenCreatedTransaction,
+  isTokenRelatedTransaction,
 } = require('../common/utils');
 const {
   blockFormatter,
   transactionFormatter,
   resourceFormatter,
-  contractTokenRelatedFormatter
+  tokenCreatedFormatter,
+  tokenRelatedFormatter
 } = require('../formatters/index');
 const { TABLE_NAME, TABLE_COLUMNS } = require('../common/constants');
 
@@ -160,7 +162,7 @@ class Query {
     await this.query(sql, tokenInfo, connection);
   }
 
-  async insertContractToken(transactions = [], isConfirmed = true, connection = null) {
+  async insertTokenCreatedTransactions(transactions = [], isConfirmed = true, connection = null) {
     if (transactions.length === 0 || !isConfirmed) {
       return;
     }
@@ -183,13 +185,13 @@ class Query {
     }
     const keys = isConfirmed ? TABLE_COLUMNS.RESOURCE_CONFIRMED : TABLE_COLUMNS.RESOURCE_UNCONFIRMED;
     const tableName = isConfirmed ? TABLE_NAME.RESOURCE_CONFIRMED : TABLE_NAME.RESOURCE_UNCONFIRMED;
+    const select = isConfirmed ? 'insert into' : 'replace';
     const {
       valuesStr,
       keysStr,
       values
     } = Query.prepareInsertParams(transactions, keys);
-    // eslint-disable-next-line max-len
-    const sql = `insert into ${tableName} ${keysStr} VALUES ${valuesStr} ON DUPLICATE KEY UPDATE tx_id=VALUES(tx_id);`;
+    const sql = `${select} ${tableName} ${keysStr} VALUES ${valuesStr};`;
     await this.query(sql, values, connection);
   }
 
@@ -199,15 +201,14 @@ class Query {
     }
     const keys = isConfirmed ? TABLE_COLUMNS.BLOCKS_CONFIRMED : TABLE_COLUMNS.BLOCKS_UNCONFIRMED;
     const tableName = isConfirmed ? TABLE_NAME.BLOCKS_CONFIRMED : TABLE_NAME.BLOCKS_UNCONFIRMED;
-
+    const select = isConfirmed ? 'insert into' : 'replace';
     const {
       valuesStr,
       keysStr,
       values
     } = Query.prepareInsertParams(blocks, keys);
 
-    // eslint-disable-next-line max-len
-    const sql = `insert into ${tableName} ${keysStr} VALUES ${valuesStr} ON DUPLICATE KEY UPDATE block_hash=VALUES(block_hash);`;
+    const sql = `${select} ${tableName} ${keysStr} VALUES ${valuesStr}`;
     await this.query(sql, values, connection);
   }
 
@@ -217,12 +218,31 @@ class Query {
     }
     const keys = isConfirmed ? TABLE_COLUMNS.TRANSACTION_CONFIRMED : TABLE_COLUMNS.TRANSACTION_UNCONFIRMED;
     const tableName = isConfirmed ? TABLE_NAME.TRANSACTION_CONFIRMED : TABLE_NAME.TRANSACTION_UNCONFIRMED;
+    const select = isConfirmed ? 'insert into' : 'replace';
     const {
       valuesStr,
       keysStr,
       values
     } = Query.prepareInsertParams(transactions, keys);
-    const sql = `insert into ${tableName} ${keysStr} VALUES ${valuesStr} ON DUPLICATE KEY UPDATE tx_id=VALUES(tx_id);`;
+
+    const sql = `${select} ${tableName} ${keysStr} VALUES ${valuesStr};`;
+    await this.query(sql, values, connection);
+  }
+
+  async insertTokenRelatedTransactions(transactions = [], isConfirmed = true, connection = null) {
+    if (transactions.length === 0) {
+      return;
+    }
+    const keys = TABLE_COLUMNS.TRANSACTION_TOKEN;
+    const tableName = isConfirmed ? TABLE_NAME.TRANSACTION_TOKEN : TABLE_NAME.TRANSACTION_TOKEN_UNCONFIRMED;
+    const select = isConfirmed ? 'insert into' : 'replace';
+    const {
+      valuesStr,
+      keysStr,
+      values
+    } = Query.prepareInsertParams(transactions, keys);
+
+    const sql = `${select} ${tableName} ${keysStr} VALUES ${valuesStr};`;
     await this.query(sql, values, connection);
   }
 
@@ -243,7 +263,13 @@ class Query {
     const tokenCreatedTransactions = transactions
       .map((v = [], i) => v
         .filter(isTokenCreatedTransaction)
-        .map(token => contractTokenRelatedFormatter(token, formattedBlocks[i].chain_id)))
+        .map(token => tokenCreatedFormatter(token, formattedBlocks[i].chain_id)))
+      .reduce((acc, i) => acc.concat(i), []);
+
+    const tokenRelatedTransactions = transactions
+      .map((v = [], i) => v
+        .filter(isTokenRelatedTransaction)
+        .map(token => tokenRelatedFormatter(token, formattedBlocks[i])))
       .reduce((acc, i) => acc.concat(i), []);
 
     const formattedTransactions = transactions
@@ -260,7 +286,8 @@ class Query {
         this.insertBlocks(formattedBlocks, isConfirmed, connection),
         this.insertTransactions(formattedTransactions, isConfirmed, connection),
         this.insertResourceTransactions(resourceTransactions, isConfirmed, connection),
-        this.insertContractToken(tokenCreatedTransactions, isConfirmed, connection)
+        this.insertTokenCreatedTransactions(tokenCreatedTransactions, isConfirmed, connection),
+        this.insertTokenRelatedTransactions(tokenRelatedTransactions, isConfirmed, connection)
       ]);
       connection.commit(async err => {
         if (err) {
@@ -296,7 +323,8 @@ class Query {
     await Promise.all([
       TABLE_NAME.BLOCKS_UNCONFIRMED,
       TABLE_NAME.TRANSACTION_UNCONFIRMED,
-      TABLE_NAME.RESOURCE_UNCONFIRMED
+      TABLE_NAME.RESOURCE_UNCONFIRMED,
+      TABLE_NAME.TRANSACTION_TOKEN_UNCONFIRMED
     ].map(tableName => {
       const sql = `DELETE from ${tableName} where block_height<=${LIBHeight}`;
       return this.query(sql);

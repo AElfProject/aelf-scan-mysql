@@ -55,6 +55,10 @@
               "requestType": "RegisterCrossChainTokenContractAddressInput",
               "responseType": "google.protobuf.Empty"
             },
+            "RegisterNativeAndResourceTokenInfo": {
+              "requestType": "RegisterNativeAndResourceTokenInfoInput",
+              "responseType": "google.protobuf.Empty"
+            },
             "RegisterNativeTokenInfo": {
               "requestType": "RegisterNativeTokenInfoInput",
               "responseType": "google.protobuf.Empty"
@@ -129,6 +133,13 @@
                 "(aelf.is_view)": true
               }
             },
+            "GetResourceTokenInfo": {
+              "requestType": "google.protobuf.Empty",
+              "responseType": "TokenInfoList",
+              "options": {
+                "(aelf.is_view)": true
+              }
+            },
             "GetBalance": {
               "requestType": "GetBalanceInput",
               "responseType": "GetBalanceOutput",
@@ -167,6 +178,20 @@
             "GetVirtualAddressForLocking": {
               "requestType": "GetVirtualAddressForLockingInput",
               "responseType": "aelf.Address",
+              "options": {
+                "(aelf.is_view)": true
+              }
+            },
+            "GetCrossChainTransferTokenContractAddress": {
+              "requestType": "GetCrossChainTransferTokenContractAddressInput",
+              "responseType": "aelf.Address",
+              "options": {
+                "(aelf.is_view)": true
+              }
+            },
+            "GetPrimaryTokenSymbol": {
+              "requestType": "google.protobuf.Empty",
+              "responseType": "google.protobuf.StringValue",
               "options": {
                 "(aelf.is_view)": true
               }
@@ -210,6 +235,10 @@
             "issueChainId": {
               "type": "sint32",
               "id": 9
+            },
+            "burned": {
+              "type": "sint64",
+              "id": 10
             }
           }
         },
@@ -247,6 +276,10 @@
             "isTransferDisabled": {
               "type": "bool",
               "id": 8
+            },
+            "issueChainId": {
+              "type": "int32",
+              "id": 9
             }
           }
         },
@@ -279,6 +312,22 @@
             "issueChainId": {
               "type": "sint32",
               "id": 8
+            }
+          }
+        },
+        "RegisterNativeAndResourceTokenInfoInput": {
+          "fields": {
+            "nativeTokenInfo": {
+              "type": "RegisterNativeTokenInfoInput",
+              "id": 1
+            },
+            "resourceTokenList": {
+              "type": "TokenInfoList",
+              "id": 2
+            },
+            "chainPrimaryToken": {
+              "type": "TokenInfo",
+              "id": 3
             }
           }
         },
@@ -778,6 +827,23 @@
             }
           }
         },
+        "TokenInfoList": {
+          "fields": {
+            "value": {
+              "rule": "repeated",
+              "type": "TokenInfo",
+              "id": 1
+            }
+          }
+        },
+        "GetCrossChainTransferTokenContractAddressInput": {
+          "fields": {
+            "chainId": {
+              "type": "int32",
+              "id": 1
+            }
+          }
+        },
         "CrossChainCreateTokenInput": {
           "fields": {
             "fromChainId": {
@@ -944,6 +1010,17 @@
             "amount": {
               "type": "sint64",
               "id": 3
+            }
+          }
+        },
+        "ChainPrimaryTokenSymbolSet": {
+          "options": {
+            "(aelf.is_event)": true
+          },
+          "fields": {
+            "tokenSymbol": {
+              "type": "string",
+              "id": 1
             }
           }
         }

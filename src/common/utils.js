@@ -38,10 +38,18 @@ function isTokenCreatedTransaction(transaction) {
 
 // 是否为对token相关的交易，token转移等
 function isTokenRelatedTransaction(transaction) {
-  const relatedMethodName = ['Initialize', 'Transfer', 'InitialBalance', 'Create'];
+  const methods = [
+    'Transfer',
+    'TransferFrom',
+    'Issue',
+    'Create',
+    'CrossChainTransfer',
+    'CrossChainReceiveToken'
+  ];
   return !!(transaction.Transaction
     && transaction.Transaction.To === config.contracts.token
-    && relatedMethodName.includes(transaction.Transaction.MethodName));
+    && methods.includes(transaction.Transaction.MethodName)
+  );
 }
 
 function execCommand(command) {

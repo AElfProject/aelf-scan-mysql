@@ -15,7 +15,9 @@ const TABLE_NAME = {
   BLOCKS_CONFIRMED: 'blocks_0',
   BLOCKS_UNCONFIRMED: 'blocks_unconfirmed',
   TRANS_PER_SECOND: 'tps_0',
-  RESOURCE_TPS: 'tps_resource'
+  RESOURCE_TPS: 'tps_resource',
+  TRANSACTION_TOKEN: 'transactions_token',
+  TRANSACTION_TOKEN_UNCONFIRMED: 'transactions_token_unconfirmed'
 };
 
 const TABLE_COLUMNS = {
@@ -122,6 +124,19 @@ const TABLE_COLUMNS = {
     'type',
     'resource_type',
     'method'
+  ],
+  TRANSACTION_TOKEN: [
+    'tx_id',
+    'chain_id',
+    'block_height',
+    'symbol',
+    'address_from',
+    'address_to',
+    'params',
+    'method',
+    'block_hash',
+    'tx_status',
+    'time'
   ]
 };
 
