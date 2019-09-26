@@ -7,7 +7,8 @@
     "dev": "npm run clean && cross-env NODE_ENV=development pm2 start src/index.js --name aelf-scan-mysql --time",
     "start": "cross-env NODE_ENV=production pm2 start src/index.js --name aelf-scan-mysql --exp-backoff-restart-delay=1000 --time",
     "clean": "rimraf ./*.log ",
-    "commit": "git-cz"
+    "commit": "git-cz",
+    "proto": "node scripts/compile-proto.js"
   },
   "repository": {
     "type": "git",

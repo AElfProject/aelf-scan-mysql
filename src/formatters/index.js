@@ -53,12 +53,12 @@ function contractTokenFormatter(tokenAddress, chainId, tokenInfo) {
 }
 
 /**
- * token related transactions
+ * token created transactions
  * @param {Object} tokenInfo
  * @param {string} chainId
  * @return {Object}
  */
-function contractTokenRelatedFormatter(tokenInfo, chainId) {
+function tokenCreatedFormatter(tokenInfo, chainId) {
   const {
     Transaction,
     BlockHash,
@@ -100,6 +100,52 @@ function resourceFormatter(transaction, block) {
     tx_status: Status,
     time: block.time
   };
+}
+
+function tokenRelatedFormatter(transaction, blockInfo) {
+  const {
+    Status,
+    Transaction,
+    TransactionId,
+    BlockHash
+  } = transaction;
+  const {
+    From,
+    To,
+    MethodName,
+    Params
+  } = Transaction;
+  const params = JSON.parse(Params);
+  const {
+    symbol,
+    to
+  } = params;
+  const result = {
+    tx_id: TransactionId,
+    chain_id: blockInfo.chain_id,
+    block_height: blockInfo.block_height,
+    symbol: symbol || 'none',
+    address_from: From,
+    address_to: to || To,
+    params: JSON.stringify(params),
+    method: MethodName,
+    block_hash: BlockHash,
+    tx_status: Status,
+    time: blockInfo.time
+  };
+  if (
+    [
+      'CrossChainReceiveToken'
+    ].includes(MethodName)
+  ) {
+    const crossTransfer = deserializeCrossChainTransferInput(params.transferTransactionBytes);
+    result.address_to = crossTransfer.to || 'tx failed';
+    params.merklePath = null;
+    params.transferTransactionBytes = null;
+    params.transferTx = crossTransfer;
+    result.params = JSON.stringify(params);
+  }
+  return result;
 }
 
 function transactionFormatter(transaction, blockInfo) {
@@ -188,7 +234,8 @@ function transactionFormatter(transaction, blockInfo) {
 module.exports = {
   blockFormatter,
   contractTokenFormatter,
-  contractTokenRelatedFormatter,
+  tokenCreatedFormatter,
   resourceFormatter,
-  transactionFormatter
+  transactionFormatter,
+  tokenRelatedFormatter
 };

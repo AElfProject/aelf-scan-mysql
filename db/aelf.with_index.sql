@@ -73,8 +73,8 @@ CREATE TABLE `blocks_unconfirmed` (
   `merkle_root_state` varchar(64) NOT NULL,
   `time` varchar(64) NOT NULL COMMENT '直接转存节点来的',
   PRIMARY KEY (`id`) USING BTREE,
-  KEY `block_hash` (`block_hash`) USING BTREE,
-  KEY `block_height` (`block_height`) USING BTREE,
+  UNIQUE KEY `block_hash` (`block_hash`) USING BTREE,
+  UNIQUE KEY `block_height` (`block_height`) USING BTREE,
   KEY `time` (`time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -167,7 +167,7 @@ CREATE TABLE `resource_unconfirmed` (
   `tx_status` varchar(64) NOT NULL,
   `time` varchar(64) NOT NULL,
   PRIMARY KEY (`id`) USING BTREE,
-  KEY `tx_id` (`tx_id`) USING BTREE
+  UNIQUE KEY `tx_id` (`tx_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
@@ -269,7 +269,7 @@ CREATE TABLE `transactions_unconfirmed` (
   `tx_status` varchar(64) NOT NULL,
   `time` varchar(64) NOT NULL COMMENT 'time of blocks',
   PRIMARY KEY (`id`) USING BTREE,
-  KEY `tx_id` (`tx_id`),
+  UNIQUE KEY `tx_id` (`tx_id`),
   KEY `params_to` (`params_to`),
   KEY `block_hash` (`block_hash`),
   KEY `method` (`method`),
@@ -317,5 +317,58 @@ CREATE TABLE `vote_teams`(
 ) ENGINE = InnoDB
   auto_increment = 1
   DEFAULT CHARSET = utf8;
+
+-- ----------------------------
+-- Table structure for token related transactions
+-- ----------------------------
+DROP TABLE IF EXISTS `transactions_token`;
+CREATE TABLE `transactions_token`
+(
+  `id`           bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tx_id`        varchar(64)      NOT NULL,
+  `chain_id`     varchar(64)      NOT NULL,
+  `block_height` int(32) unsigned NOT NULL,
+  `symbol`       varchar(64)      NOT NULL,
+  `address_from` varchar(64)      NOT NULL,
+  `address_to`   varchar(64)      NOT NULL COMMENT 'contract address',
+  `params`       TEXT             NOT NULL,
+  `method`       varchar(64)      NOT NULL,
+  `block_hash`   varchar(64)      NOT NULL,
+  `tx_status`    varchar(64)      NOT NULL,
+  `time`         varchar(64)      NOT NULL COMMENT 'time of blocks',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `tx_id` (`tx_id`),
+  KEY `block_hash` (`block_hash`),
+  KEY `method` (`method`),
+  KEY `address_from` (`address_from`),
+  KEY `address_to` (`address_to`),
+  KEY `symbol` (`symbol`)
+) ENGINE = InnoDB
+  AUTO_INCREMENT = 1;
+
+DROP TABLE IF EXISTS `transactions_token_unconfirmed`;
+CREATE TABLE `transactions_token_unconfirmed`
+(
+  `id`           bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tx_id`        varchar(64)      NOT NULL,
+  `chain_id`     varchar(64)      NOT NULL,
+  `block_height` int(32) unsigned NOT NULL,
+  `symbol`       varchar(64)      NOT NULL,
+  `address_from` varchar(64)      NOT NULL,
+  `address_to`   varchar(64)      NOT NULL COMMENT 'contract address',
+  `params`       TEXT             NOT NULL,
+  `method`       varchar(64)      NOT NULL,
+  `block_hash`   varchar(64)      NOT NULL,
+  `tx_status`    varchar(64)      NOT NULL,
+  `time`         varchar(64)      NOT NULL COMMENT 'time of blocks',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `tx_id` (`tx_id`),
+  KEY `block_hash` (`block_hash`),
+  KEY `method` (`method`),
+  KEY `address_from` (`address_from`),
+  KEY `address_to` (`address_to`),
+  KEY `symbol` (`symbol`)
+) ENGINE = InnoDB
+  AUTO_INCREMENT = 1;
 
 SET FOREIGN_KEY_CHECKS = 1;
