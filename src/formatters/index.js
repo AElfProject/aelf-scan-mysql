@@ -91,7 +91,7 @@ function resourceFormatter(transaction, block) {
     tx_id: TransactionId,
     address: From,
     method: MethodName,
-    type: params.symbol,
+    type: params.symbol || 'none',
     resource: parseInt(params.amount || 0, 10),
     elf: tradeDetail && (new Long(tradeDetail.baseAmount)).toString() || 0,
     fee: tradeDetail && (new Long(tradeDetail.feeAmount)).toString() || 0,
