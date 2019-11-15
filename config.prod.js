@@ -39,7 +39,6 @@ module.exports = {
   wallet: {
     privateKey: 'f6e512a3c259e5f9af981d7f99d245aa5bc52fe448495e0b0dd56e8406be6f71'
   },
-  nativeTokenSymbol: 'TELF',
   contracts: {
     // Token合约可以通过getContractAddressByName来获取
     token: 'AElf.ContractNames.Token',
@@ -68,7 +67,7 @@ module.exports = {
     sendmailPath: '/usr/sbin/sendmail',
     user: 'aelf.scan@aelf.io', // generated ethereal user
     from: 'AElf scan <aelf.scan@aelf.io>',
-    to: ['atom.yang@aelf.io', 'atom.yang@hoopox.com'],
+    to: ['test@mail.com'],
     subject: 'error happened when scanning'
   }
 };

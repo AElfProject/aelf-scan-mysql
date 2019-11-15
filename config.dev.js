@@ -67,7 +67,7 @@ module.exports = {
     sendmailPath: '/usr/sbin/sendmail',
     user: 'aelf.scan@aelf.io', // generated ethereal user
     from: 'AElf scan <aelf.scan@aelf.io>',
-    to: ['atom.yang@aelf.io', 'atom.yang@hoopox.com'],
+    to: ['test@mail.com'],
     subject: 'error happened when scanning'
   }
 };
