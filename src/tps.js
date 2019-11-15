@@ -6,10 +6,8 @@
 const moment = require('moment');
 const { Scheduler } = require('aelf-block-scan');
 // eslint-disable-next-line prefer-const
-let { config, TABLE_COLUMNS, TABLE_NAME } = require('./common/constants');
+const { config, TABLE_COLUMNS, TABLE_NAME } = require('./common/constants');
 const Query = require('./sql/index');
-
-config = config.tps;
 
 class TPS {
   constructor(options) {
@@ -322,7 +320,8 @@ class TPS {
 }
 
 const tps = new TPS({
-  ...config,
+  ...config.tps,
+  sql: config.sql,
   tableName: TABLE_NAME.TRANS_PER_SECOND,
   tableKeys: TABLE_COLUMNS.TRANS_PER_SECOND
 });

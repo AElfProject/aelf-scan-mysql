@@ -46,14 +46,6 @@ module.exports = {
     tokenConverter: 'AElf.ContractNames.TokenConverter'
   },
   tps: {
-    sql: {
-      host: '127.0.0.1',
-      port: '3306',
-      user: 'root',
-      password: 'password',
-      database: 'aelf_main_chain',
-      connectionLimit: 25
-    },
     minutes: 1, // minute
     interval: 60, // s, 秒
     scanInterval: 60 * 5, // s
