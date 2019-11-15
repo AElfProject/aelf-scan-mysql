@@ -49,8 +49,12 @@ class CustomInsert {
   async init() {
     // 插入表中
     const tokenInfo = await this.getELFTokenInfo();
+    const primaryTokenInfo = await this.getPrimaryTokenInfo(tokenInfo[2]);
     this.sqlQuery = new Query(config.sql);
     await this.sqlQuery.insertContract(contractTokenFormatter(...tokenInfo));
+    if (primaryTokenInfo.length > 0) {
+      await this.sqlQuery.insertContract(contractTokenFormatter(...primaryTokenInfo));
+    }
     await this.sqlQuery.initCounts();
     const options = await this.getConfig();
     options.aelfInstance = this.aelf;
@@ -92,6 +96,34 @@ class CustomInsert {
       ChainId,
       tokenInfo
     ];
+  }
+
+  async getPrimaryTokenInfo(tokenInfo) {
+    const {
+      symbol
+    } = tokenInfo;
+    const {
+      GenesisContractAddress,
+      ChainId
+    } = await this.aelf.chain.getChainStatus();
+    const genesisContract = await this.aelf.chain.contractAt(GenesisContractAddress, this.wallet);
+    const tokenAddress = await genesisContract
+      .GetContractAddressByName.call(AElf.utils.sha256('AElf.ContractNames.Token'));
+    const tokenContract = await this.aelf.chain.contractAt(tokenAddress, this.wallet);
+    const {
+      value: primaryTokenSymbol
+    } = await tokenContract.GetPrimaryTokenSymbol.call();
+    if (primaryTokenSymbol !== symbol) {
+      const primaryTokenInfo = await tokenContract.GetTokenInfo.call({
+        symbol: primaryTokenSymbol
+      });
+      return [
+        tokenAddress,
+        ChainId,
+        primaryTokenInfo
+      ];
+    }
+    return [];
   }
 
   async getConfig() {
