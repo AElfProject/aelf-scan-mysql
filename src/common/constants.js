@@ -17,7 +17,8 @@ const TABLE_NAME = {
   TRANS_PER_SECOND: 'tps_0',
   RESOURCE_TPS: 'tps_resource',
   TRANSACTION_TOKEN: 'transactions_token',
-  TRANSACTION_TOKEN_UNCONFIRMED: 'transactions_token_unconfirmed'
+  TRANSACTION_TOKEN_UNCONFIRMED: 'transactions_token_unconfirmed',
+  NODE_INFOS: 'nodes_0'
 };
 
 const TABLE_COLUMNS = {
@@ -137,6 +138,17 @@ const TABLE_COLUMNS = {
     'block_hash',
     'tx_status',
     'time'
+  ],
+  NODE_INFOS: [
+    'contract_address',
+    'chain_id',
+    'api_ip',
+    'api_domain',
+    'rpc_ip',
+    'rpc_domain',
+    'token_name',
+    'owner',
+    'status'
   ]
 };
 

@@ -123,6 +123,23 @@ class Query {
     }
   }
 
+  async hasNodeInfo() {
+    // remove stupid sql string, use ORM
+    const sql = `select * from ${TABLE_NAME.NODE_INFOS}`;
+    const count = await this.query(sql);
+    return count.length > 0;
+  }
+
+  async insertNodesInfo(nodesInfo) {
+    const keys = TABLE_COLUMNS.NODE_INFOS;
+    const valuesBlank = `(${keys.map(() => '?').join(',')})`;
+
+    const keysStr = `(${keys.join(',')})`;
+    // eslint-disable-next-line max-len
+    const sql = `insert into ${TABLE_NAME.NODE_INFOS} ${keysStr} VALUES ${valuesBlank} ON DUPLICATE KEY UPDATE contract_address=VALUES(contract_address);`;
+    await this.query(sql, nodesInfo);
+  }
+
   async getMaxHeight() {
     // 要取confirmed表中数据
     const sql = `select block_height from ${TABLE_NAME.BLOCKS_CONFIRMED} ORDER BY block_height DESC limit 1`;

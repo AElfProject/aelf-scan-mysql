@@ -55,6 +55,7 @@ module.exports = {
     maxQuery: 20,
     maxInsert: 200
   },
+  blockApi: 'http://127.0.0.1:7101',
   mails: {
     sendmailPath: '/usr/sbin/sendmail',
     user: 'aelf.scan@aelf.io', // generated ethereal user

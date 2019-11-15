@@ -55,6 +55,20 @@ class CustomInsert {
     if (primaryTokenInfo.length > 0) {
       await this.sqlQuery.insertContract(contractTokenFormatter(...primaryTokenInfo));
     }
+    const hasNodeInfo = await this.sqlQuery.hasNodeInfo();
+    if (!hasNodeInfo) {
+      await this.sqlQuery.insertNodesInfo([
+        tokenInfo[0],
+        tokenInfo[1],
+        config.blockApi,
+        config.blockApi,
+        config.scan.host,
+        config.scan.host,
+        tokenInfo[2].symbol,
+        'owner',
+        1
+      ]);
+    }
     await this.sqlQuery.initCounts();
     const options = await this.getConfig();
     options.aelfInstance = this.aelf;
