@@ -308,7 +308,7 @@ class Query {
       ]);
       connection.commit(async err => {
         if (err) {
-          console.log(`error happened when commit ${JSON.stringify(err)}`);
+          console.error(`error happened when commit ${JSON.stringify(err)}`);
           connection.rollback(() => {
             connection.release();
             // eslint-disable-next-line max-len
@@ -327,7 +327,7 @@ class Query {
         }
       });
     } catch (e) {
-      console.log(`error happened when insert ${JSON.stringify(e)}`);
+      console.error(`error happened when insert ${JSON.stringify(e)}`);
       connection.rollback(() => {
         connection.release();
         // eslint-disable-next-line max-len

@@ -34,7 +34,7 @@ async function sendEmails(message = '') {
     transporter.close();
     console.log('Message sent: %s', info.messageId);
   } catch (e) {
-    console.log(e);
+    console.error(e);
   }
 }
 
