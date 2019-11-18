@@ -581,10 +581,10 @@ acorn@^6.0.1, acorn@^6.0.7:
   version "6.2.1"
   resolved "https://registry.npm.taobao.org/acorn/download/acorn-6.2.1.tgz#3ed8422d6dec09e6121cc7a843ca86a330a86b51"
 
-aelf-block-scan@^0.1.5:
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/aelf-block-scan/-/aelf-block-scan-0.1.5.tgz#57a02ec84e3d712becf501874cdeb3ed12f6a215"
-  integrity sha512-xuz1fRuwZHAyIvEfFXvpMQ9yiYIwqnAxwZFut75y8qqcFceBwhDZ1s9yXtR5R+cpaIfoJunXScWSzkibLctAdQ==
+aelf-block-scan@^0.2.3:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/aelf-block-scan/-/aelf-block-scan-0.2.3.tgz#22384618f2a3952aa39131853f9fc1d8e2e7593f"
+  integrity sha512-EykrrWtNS2NNzB5YBu8pXc+I6CxNQ/ZA987/kM3amkQ374TcuIyaJA9TlntyfIOoT59Yv7o77DQuZ7YaeOgpig==
   dependencies:
     aelf-sdk "^3.2.11"
     cross-env "^5.2.0"

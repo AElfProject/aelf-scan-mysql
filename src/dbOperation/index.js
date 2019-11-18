@@ -20,6 +20,7 @@ class DBOperation extends DBBaseOperation {
   }
 
   async insert(data) {
+    console.log('\n\n');
     const now = new Date().getTime();
     console.log(`take time ${now - this.lastTime}ms`);
     this.lastTime = now;
@@ -60,7 +61,6 @@ class DBOperation extends DBBaseOperation {
     if (blocks.length > 0) {
       console.log('highest height', blocks[blocks.length - 1].Header.Height);
     }
-    console.log('\n\n');
   }
 
   async insertHeight(data, isConfirmed = true) {
