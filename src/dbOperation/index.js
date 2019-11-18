@@ -35,6 +35,7 @@ class DBOperation extends DBBaseOperation {
         console.log('INIT');
         break;
       case QUERY_TYPE.MISSING:
+        console.log('MISSING');
         await this.insertHeight(data);
         break;
       case QUERY_TYPE.GAP:
