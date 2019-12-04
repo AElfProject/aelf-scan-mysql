@@ -81,7 +81,7 @@ class CustomInsert {
         tps.init();
       }, 120000);
     } catch (err) {
-      console.error(`root catch ${err.toString()}`);
+      console.log('root catch', err);
       await sendEmails(err);
       this.cleanup();
     }

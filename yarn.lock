@@ -581,10 +581,9 @@ acorn@^6.0.1, acorn@^6.0.7:
   version "6.2.1"
   resolved "https://registry.npm.taobao.org/acorn/download/acorn-6.2.1.tgz#3ed8422d6dec09e6121cc7a843ca86a330a86b51"
 
-aelf-block-scan@^0.2.3:
-  version "0.2.3"
-  resolved "https://registry.yarnpkg.com/aelf-block-scan/-/aelf-block-scan-0.2.3.tgz#22384618f2a3952aa39131853f9fc1d8e2e7593f"
-  integrity sha512-EykrrWtNS2NNzB5YBu8pXc+I6CxNQ/ZA987/kM3amkQ374TcuIyaJA9TlntyfIOoT59Yv7o77DQuZ7YaeOgpig==
+aelf-block-scan@^0.2.4:
+  version "0.2.4"
+  resolved "https://registry.npm.taobao.org/aelf-block-scan/download/aelf-block-scan-0.2.4.tgz?cache=0&sync_timestamp=1575471280628&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Faelf-block-scan%2Fdownload%2Faelf-block-scan-0.2.4.tgz#abbb7159e443ae47524a3f3003ffefebf86d6234"
   dependencies:
     aelf-sdk "^3.2.11"
     cross-env "^5.2.0"
@@ -941,7 +940,6 @@ blessed@^0.1.81:
 bluebird@^3.5.5:
   version "3.5.5"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.5.tgz#a8d0afd73251effbbd5fe384a77d73003c17a71f"
-  integrity sha512-5am6HnnfN+urzt4yfg7IgTbotDjIT/u8AJpEt0sIU9FtXfVeezXAPKswrG+xKUCOYAINpSdgZVDU6QFh+cuH3w==
 
 bn.js@^4.11.8, bn.js@^4.4.0:
   version "4.11.8"
@@ -1606,7 +1604,6 @@ domexception@^1.0.1:
 double-ended-queue@^2.1.0-0:
   version "2.1.0-0"
   resolved "https://registry.yarnpkg.com/double-ended-queue/-/double-ended-queue-2.1.0-0.tgz#103d3527fd31528f40188130c841efdd78264e5c"
-  integrity sha1-ED01J/0xUo9AGIEwyEHv3XgmTlw=
 
 drbg.js@^1.0.1:
   version "1.0.1"
@@ -2500,7 +2497,6 @@ https-proxy-agent@^2.2.1:
 husky@^3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/husky/-/husky-3.0.2.tgz#e78fd2ae16edca59fc88e56aeb8d70acdcc1c082"
-  integrity sha512-WXCtaME2x0o4PJlKY4ap8BzLA+D0zlvefqAvLCPriOOu+x0dpO5uc5tlB7CY6/0SE2EESmoZsj4jW5D09KrJoA==
   dependencies:
     chalk "^2.4.2"
     cosmiconfig "^5.2.1"
@@ -3849,7 +3845,6 @@ node-pre-gyp@^0.12.0:
 nodemailer@^6.3.0:
   version "6.3.0"
   resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-6.3.0.tgz#a89b0c62d3937bdcdeecbf55687bd7911b627e12"
-  integrity sha512-TEHBNBPHv7Ie/0o3HXnb7xrPSSQmH1dXwQKRaMKDBGt/ZN54lvDVujP6hKkO/vjkIYL9rK8kHSG11+G42Nhxuw==
 
 nopt@^4.0.1:
   version "4.0.1"
@@ -4592,17 +4587,14 @@ rechoir@^0.6.2:
 redis-commands@^1.2.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/redis-commands/-/redis-commands-1.5.0.tgz#80d2e20698fe688f227127ff9e5164a7dd17e785"
-  integrity sha512-6KxamqpZ468MeQC3bkWmCB1fp56XL64D4Kf0zJSwDZbVLLm7KFkoIcHrgRvQ+sk8dnhySs7+yBg94yIkAK7aJg==
 
 redis-parser@^2.6.0:
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/redis-parser/-/redis-parser-2.6.0.tgz#52ed09dacac108f1a631c07e9b69941e7a19504b"
-  integrity sha1-Uu0J2srBCPGmMcB+m2mUHnoZUEs=
 
 redis@^2.8.0:
   version "2.8.0"
   resolved "https://registry.yarnpkg.com/redis/-/redis-2.8.0.tgz#202288e3f58c49f6079d97af7a10e1303ae14b02"
-  integrity sha512-M1OkonEQwtRmZv4tEWF2VgpG0JWJ8Fv1PhlgT5+B+uNq2cA3Rt1Yt/ryoR+vQNOQcIEgdCdfH0jr3bDpihAw1A==
   dependencies:
     double-ended-queue "^2.1.0-0"
     redis-commands "^1.2.0"
