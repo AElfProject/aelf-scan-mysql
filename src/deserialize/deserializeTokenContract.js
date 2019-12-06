@@ -24,7 +24,11 @@ function deserializeCrossChainTransferInput(base64Str) {
     oneofs: true // includes virtual oneof fields set to the present field's name
   });
 
-  result.to = AElf.pbUtils.getRepForAddress(result.to);
+  try {
+    result.to = AElf.pbUtils.getRepForAddress(result.to);
+  } catch (e) {
+    result.to = 'tx failed';
+  }
   return result;
 }
 

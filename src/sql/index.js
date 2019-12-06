@@ -252,7 +252,7 @@ class Query {
     }
     const keys = TABLE_COLUMNS.TRANSACTION_TOKEN;
     const tableName = isConfirmed ? TABLE_NAME.TRANSACTION_TOKEN : TABLE_NAME.TRANSACTION_TOKEN_UNCONFIRMED;
-    const select = isConfirmed ? 'insert into' : 'replace';
+    const select = isConfirmed ? 'replace' : 'replace';
     const {
       valuesStr,
       keysStr,
