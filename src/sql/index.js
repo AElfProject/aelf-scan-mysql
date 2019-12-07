@@ -99,9 +99,9 @@ class Query {
 
   getCounts(keys) {
     return Promise.all(keys.map(v => {
-      const sql = `select count(*) as count from ${v}`;
+      const sql = `select id as count from ${v} order by id DESC limit 1`;
       return this.query(sql, []);
-    })).then(res => res.map(v => v[0].count));
+    })).then(res => res.map(v => (v.length === 0 ? 0 : v[0].count)));
   }
 
   getConnection() {
@@ -125,7 +125,7 @@ class Query {
 
   async hasNodeInfo() {
     // remove stupid sql string, use ORM
-    const sql = `select * from ${TABLE_NAME.NODE_INFOS}`;
+    const sql = `select id from ${TABLE_NAME.NODE_INFOS}`;
     const count = await this.query(sql);
     return count.length > 0;
   }
