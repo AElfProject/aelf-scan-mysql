@@ -28,7 +28,8 @@ CREATE TABLE `address_contracts`
     `contract_address` varchar(64)     NOT NULL,
     `symbol`           varchar(64)     NOT NULL,
     `update_time`      datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-    PRIMARY KEY (`id`) USING BTREE
+    PRIMARY KEY (`id`) USING BTREE,
+    UNIQUE KEY (`address`,`contract_address`,`symbol`) USING BTREE
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
 
