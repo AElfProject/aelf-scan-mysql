@@ -19,3 +19,9 @@ TRUNCATE TABLE tps_resource;
 TRUNCATE TABLE transactions_token;
 
 TRUNCATE TABLE transactions_token_unconfirmed;
+
+TRUNCATE TABLE nodes_0;
+
+TRUNCATE TABLE address_contracts;
+
+TRUNCATE TABLE vote_teams;

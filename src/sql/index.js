@@ -99,9 +99,9 @@ class Query {
 
   getCounts(keys) {
     return Promise.all(keys.map(v => {
-      const sql = `select id as count from ${v} order by id DESC limit 1`;
+      const sql = `select count(1) as count from ${v}`;
       return this.query(sql, []);
-    })).then(res => res.map(v => (v.length === 0 ? 0 : v[0].count)));
+    })).then(res => res.map(v => v[0].count));
   }
 
   getConnection() {
