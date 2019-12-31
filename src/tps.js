@@ -18,8 +18,8 @@ class TPS {
     });
     this.confirmedSql = `select * from ${TABLE_NAME.BLOCKS_CONFIRMED} where time between ? and ?`;
     this.unconfirmedSql = `select * from ${TABLE_NAME.BLOCKS_UNCONFIRMED} where time between ? and ?`;
-    this.resourceConfirmedSql = `select * from ${TABLE_NAME.RESOURCE_CONFIRMED} where time between ? and ?`;
-    this.resourceUnconfirmedSql = `select * from ${TABLE_NAME.RESOURCE_CONFIRMED} where time between ? and ?`;
+    // this.resourceConfirmedSql = `select * from ${TABLE_NAME.RESOURCE_CONFIRMED} where time between ? and ?`;
+    // this.resourceUnconfirmedSql = `select * from ${TABLE_NAME.RESOURCE_CONFIRMED} where time between ? and ?`;
     this.lastCurrentTime = moment().unix();
   }
 
@@ -175,7 +175,7 @@ class TPS {
 
   async handleBatch(data) {
     const {
-      resources,
+      // resources,
       blocks,
       startTime,
       endTime
@@ -194,7 +194,7 @@ class TPS {
         type: this.config.minutes
       }));
     await this.insertBlocks(blocks, startTime, insertValues);
-    await this.insertResource(resources, startTime, insertValues.map(v => ({ ...v })));
+    // await this.insertResource(resources, startTime, insertValues.map(v => ({ ...v })));
   }
 
   async queryInLoop(startTime) {
@@ -256,21 +256,21 @@ class TPS {
     console.log(`getResultPerInterval, is in loop ${isLoop}, query from ${this.formatTime(startTime)} to ${this.formatTime(endTime)}`);
     // 只有循环查询的情况下才需要查询unconfirmed
     let blocks;
-    let resources;
+    // let resources;
     const startTimeUTC = this.formatTime(startTime);
     const endTimeUTC = this.formatTime(endTime);
     const sqlValues = [startTimeUTC, endTimeUTC];
     blocks = await this.query.query(this.confirmedSql, sqlValues);
-    resources = await this.query.query(this.resourceConfirmedSql, sqlValues);
+    // resources = await this.query.query(this.resourceConfirmedSql, sqlValues);
     // eslint-disable-next-line max-len
     if (isLoop) {
       const unconfirmedBlocks = await this.query.query(this.unconfirmedSql, sqlValues);
-      const unconfirmedResource = await this.query.query(this.resourceUnconfirmedSql, sqlValues);
+      // const unconfirmedResource = await this.query.query(this.resourceUnconfirmedSql, sqlValues);
       blocks = this.removeDuplicateList(blocks, unconfirmedBlocks, 'block_hash');
-      resources = this.removeDuplicateList(resources, unconfirmedResource, 'tx_id');
+      // resources = this.removeDuplicateList(resources, unconfirmedResource, 'tx_id');
     }
     return {
-      resources,
+      // resources,
       blocks,
       startTime,
       endTime
