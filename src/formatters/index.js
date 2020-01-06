@@ -3,7 +3,6 @@
  * @author atom-yang
  * @date 2019-07-23
  */
-const Long = require('long');
 const deserializeEvents = require('../deserialize/deserializeEvents');
 const {
   deserializeCrossChainTransferInput
@@ -93,8 +92,8 @@ function resourceFormatter(transaction, block) {
     method: MethodName,
     type: params.symbol || 'none',
     resource: parseInt(params.amount || 0, 10),
-    elf: tradeDetail && (new Long(tradeDetail.baseAmount)).toString() || 0,
-    fee: tradeDetail && (new Long(tradeDetail.feeAmount)).toString() || 0,
+    elf: tradeDetail && tradeDetail.baseAmount.toString() || 0,
+    fee: tradeDetail && tradeDetail.feeAmount.toString() || 0,
     chain_id: block.chain_id,
     block_height: block.block_height,
     tx_status: Status,
