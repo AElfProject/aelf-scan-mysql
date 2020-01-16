@@ -212,6 +212,9 @@ class TPS {
       }
       const endTime = this.floorEndTimeToMatchInterval(this.lastCurrentTime, currentTime);
       const results = await this.getResultPerInterval(this.lastCurrentTime, endTime, true);
+      if (results.blocks && results.blocks.length === 0) {
+        return;
+      }
       await this.handleBatch(results);
       this.lastCurrentTime = endTime;
     });
