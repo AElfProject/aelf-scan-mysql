@@ -192,6 +192,10 @@ function transactionFormatter(transaction, blockInfo) {
     'Initialize', 'Transfer', 'InitialBalance', 'Create', 'CrossChainTransfer', 'CrossChainReceiveToken'
   ].includes(txInfo.MethodName);
 
+  if (!transaction.Status || (transaction.Status || '').toUpperCase() !== 'MINED') {
+    return output;
+  }
+
   if (txInfo.To === config.contracts.resource) {
     output.params = txInfo.Params;
   } else if (txInfo.To === config.contracts.token && tokenMethodCheck) {
