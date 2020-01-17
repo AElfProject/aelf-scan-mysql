@@ -58,13 +58,14 @@ class Query {
 
   async initCounts() {
     const countsKeys = Object.keys(this.tableKeys);
-    const counts = await this.getCounts(countsKeys);
     const { keys, connection } = config.redis;
     const initialCounts = {};
+    this.redisQuery = new Counter(redis.createClient(connection), keys, initialCounts);
+    const counts = await this.getCounts(countsKeys);
     counts.forEach((v, i) => {
       initialCounts[this.tableKeys[countsKeys[i]]] = v;
     });
-    this.redisQuery = new Counter(redis.createClient(connection), keys, initialCounts);
+    this.redisQuery.initialCount = initialCounts;
     await this.redisQuery.init();
   }
 
@@ -98,10 +99,21 @@ class Query {
   }
 
   getCounts(keys) {
+    // eslint-disable-next-line arrow-body-style
     return Promise.all(keys.map(v => {
-      const sql = `select count(1) as count from ${v}`;
-      return this.query(sql, []);
-    })).then(res => res.map(v => v[0].count));
+      return this.redisQuery.promisifyCommand('get', config.redis.keys[this.tableKeys[v]]).then(count => {
+        const result = parseInt(count, 10);
+        if (result) {
+          console.log(`get count from redis for ${v}`);
+          return result;
+        }
+        throw new Error('not found count in redis');
+      }).catch(() => {
+        console.log(`get count from mysql for ${v}`);
+        const sql = `select count(1) as count from ${v}`;
+        return this.query(sql, []).then(sqlCount => sqlCount[0].count);
+      });
+    }));
   }
 
   getConnection() {
@@ -148,14 +160,28 @@ class Query {
   }
 
   async getMissingHeights() {
-    const sql = `select block_height from ${TABLE_NAME.BLOCKS_CONFIRMED}`;
-    let heights = await this.query(sql);
-    heights = heights.map(v => v.block_height).sort((a, b) => a - b);
-    if (heights.length === 0 || heights.length - 1 === +heights[heights.length - 1]) {
+    const maxHeight = parseInt(await this.getMaxHeight(), 10);
+    const blockCount = await this.redisQuery.promisifyCommand('get', config.redis.keys.blocksCount);
+    if (maxHeight === parseInt(blockCount, 10)) {
       return [];
     }
-    if (heights[0] !== 1) {
-      heights.unshift(1);
+    let missingHeights = [];
+    const range = 50000;
+    for (let i = 1; i <= maxHeight; i += range) {
+      // eslint-disable-next-line no-await-in-loop
+      const list = await this.getMissingHeightsInRange(i, i + range);
+      missingHeights = [...missingHeights, ...list];
+    }
+    return missingHeights;
+  }
+
+  async getMissingHeightsInRange(start, end) {
+    // eslint-disable-next-line max-len
+    const sql = `select block_height from ${TABLE_NAME.BLOCKS_CONFIRMED} where block_height between ? and ? order by block_height ASC`;
+    let heights = await this.query(sql, [start, end - 1]);
+    heights = heights.map(v => v.block_height);
+    if (heights.length === 0 || end - start === heights.length) {
+      return [];
     }
     const missingHeights = [];
     for (let i = 1; i < heights.length; i++) {
