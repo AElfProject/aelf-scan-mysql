@@ -183,8 +183,17 @@ function getContractAddress(contracts) {
   return contractAddress;
 }
 
+function getProto(address) {
+  const aelf = new AElf(new AElf.providers.HttpProvider(config.scan.host));
+  return aelf.chain.getContractFileDescriptorSet(address, { sync: true });
+}
+
 config.contracts = {
   ...getContractAddress(config.contracts)
+};
+
+config.proto = {
+  resource: getProto(config.contracts.resource)
 };
 
 module.exports = {

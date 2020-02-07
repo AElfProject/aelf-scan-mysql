@@ -98,12 +98,15 @@ class Query {
     });
   }
 
-  getCounts(keys) {
+  async getCounts(keys) {
+    const isFirstSql = 'select id from blocks_0 limit 1';
+    const id = await this.query(isFirstSql, []);
+    const isFirst = !id || id.length === 0;
     // eslint-disable-next-line arrow-body-style
     return Promise.all(keys.map(v => {
       return this.redisQuery.promisifyCommand('get', config.redis.keys[this.tableKeys[v]]).then(count => {
         const result = parseInt(count, 10);
-        if (result) {
+        if (result && !isFirst) {
           console.log(`get count from redis for ${v}`);
           return result;
         }

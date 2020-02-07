@@ -4,11 +4,13 @@
  */
 
 const AElf = require('aelf-sdk');
+const {
+  config
+} = require('../common/constants');
 
 const protobuf = AElf.pbjs;
-const tokenConverterContractPb = require('../../proto/token_converter_contract.proto.json');
 
-const tokenConverterContractRoot = protobuf.Root.fromJSON(tokenConverterContractPb);
+const tokenConverterContractRoot = protobuf.Root.fromDescriptor(config.proto.resource);
 
 function deserializeEvents(logs) {
   let eventList = [];
