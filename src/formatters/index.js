@@ -93,7 +93,7 @@ function resourceFormatter(transaction, block) {
     type: params.symbol || 'none',
     resource: parseInt(params.amount || 0, 10),
     elf: tradeDetail && tradeDetail.baseAmount.toString() || 0,
-    fee: tradeDetail && tradeDetail.feeAmount.toString() || 0,
+    fee: tradeDetail && tradeDetail.feeAmount && tradeDetail.feeAmount.toString() || 0,
     chain_id: block.chain_id,
     block_height: block.block_height,
     tx_status: Status,
