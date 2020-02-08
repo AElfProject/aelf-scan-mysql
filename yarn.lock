@@ -671,10 +671,10 @@ acorn@^7.1.0:
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-7.1.0.tgz#949d36f2c292535da602283586c2477c57eb2d6c"
   integrity sha512-kL5CuoXA/dgxlBbVrflsflzQ3PAas7RYZB52NOm/6839iVYJgKMJ3cQJD+t2i5+qFa8h3MDpEOJiS64E8JLnSQ==
 
-aelf-block-scan@^0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/aelf-block-scan/-/aelf-block-scan-0.3.0.tgz#bb464cfaf3704b3a1466af4f6da4806f9d5fe051"
-  integrity sha512-oP8bTfoLem9YEvvCSh9ivzTKTfoQVT5H4O1/qBG4hEdgBpxKMA4F0aKXHcDP13DIx3u8wu8PCtRQmT15H+AcYA==
+aelf-block-scan@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/aelf-block-scan/-/aelf-block-scan-0.3.1.tgz#eeadc61c19e85b61f537fdafae7a2f69cc320d0b"
+  integrity sha512-Xa2RYqOynMTG2VDVwqJiMZczdJeksq3Jfhq8yzRV3nhJ5h3OjuMxPorDB3lteC71jcWMdzBsiK2qFWMy9lxB2w==
   dependencies:
     aelf-sdk "^3.2.11"
     cross-env "^5.2.0"

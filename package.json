@@ -35,7 +35,7 @@
     "rimraf": "^2.6.3"
   },
   "dependencies": {
-    "aelf-block-scan": "^0.3.0",
+    "aelf-block-scan": "^0.3.1",
     "aelf-sdk": "^3.2.11",
     "ali-rds": "^3.3.0",
     "bluebird": "^3.5.5",
