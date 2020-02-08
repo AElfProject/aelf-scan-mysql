@@ -184,8 +184,11 @@ function getContractAddress(contracts) {
 }
 
 function getProto(address) {
-  const aelf = new AElf(new AElf.providers.HttpProvider(config.scan.host));
-  return aelf.chain.getContractFileDescriptorSet(address, { sync: true });
+  if (address) {
+    const aelf = new AElf(new AElf.providers.HttpProvider(config.scan.host));
+    return aelf.chain.getContractFileDescriptorSet(address, { sync: true });
+  }
+  return {};
 }
 
 config.contracts = {
