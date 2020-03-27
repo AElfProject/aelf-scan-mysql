@@ -219,7 +219,7 @@ function transactionFormatter(transaction, blockInfo) {
         const crossTransfer = deserializeCrossChainTransferInput(paramsObject.transferTransactionBytes);
         output.params_to = crossTransfer.to || 'tx failed';
         output.quantity = crossTransfer.amount || 0;
-
+        output.symbol = crossTransfer.symbol;
         output.params = paramsObject;
         output.params.merklePath = null;
         output.params.transferTransactionBytes = null;
