@@ -139,6 +139,7 @@ function tokenRelatedFormatter(transaction, blockInfo) {
   ) {
     const crossTransfer = deserializeCrossChainTransferInput(params.transferTransactionBytes);
     result.address_to = crossTransfer.to || 'tx failed';
+    result.symbol = crossTransfer.symbol || 'none';
     params.merklePath = null;
     params.transferTransactionBytes = null;
     params.transferTx = crossTransfer;
@@ -219,7 +220,6 @@ function transactionFormatter(transaction, blockInfo) {
         const crossTransfer = deserializeCrossChainTransferInput(paramsObject.transferTransactionBytes);
         output.params_to = crossTransfer.to || 'tx failed';
         output.quantity = crossTransfer.amount || 0;
-        output.symbol = crossTransfer.symbol;
         output.params = paramsObject;
         output.params.merklePath = null;
         output.params.transferTransactionBytes = null;
