@@ -3,6 +3,7 @@
  * @author atom-yang
  * @date 2019-07-22
  */
+const AElf = require('aelf-sdk');
 const { exec } = require('child_process');
 const moment = require('moment');
 
@@ -31,9 +32,9 @@ function isResourceTransaction(transaction) {
 // 是否为创建token的交易，进入contract_aelf20表中
 function isTokenCreatedTransaction(transaction) {
   return !!(transaction.Status === 'Mined'
-    && transaction.Transaction
-    && transaction.Transaction.To === config.contracts.token
-    && transaction.Transaction.MethodName === 'Create');
+    && Array.isArray(transaction.Logs)
+    && transaction.Logs.filter(log => log.Name === 'TokenCreated'
+      && log.Address === config.contracts.token));
 }
 
 // 是否为对token相关的交易，token转移等
@@ -64,10 +65,52 @@ function execCommand(command) {
   });
 }
 
+function getFee(transaction) {
+  const elfFee = AElf.pbUtils.getTransactionFee(transaction.Logs || []);
+  const resourceFees = AElf.pbUtils.getResourceFee(transaction.Logs || []);
+  return {
+    elf: elfFee.length === 0 ? 0 : (+elfFee[0].amount / 1e8),
+    resources: resourceFees.map(v => ({
+      ...v,
+      amount: (+v.amount / 1e8)
+    })).reduce((acc, v) => ({
+      ...acc,
+      [v.symbol]: v.amount
+    }), {})
+  };
+}
+const TOKEN_DECIMALS = {
+  ELF: 8
+};
+async function getDecimal(symbol) {
+  if (!TOKEN_DECIMALS[symbol]) {
+    const {
+      decimals = 8
+    } = await config.token.GetTokenInfo.call({
+      symbol
+    });
+    TOKEN_DECIMALS[symbol] = decimals;
+  }
+  return TOKEN_DECIMALS[symbol] || 8;
+}
+async function getDividend(height) {
+  let dividends = await config.dividend.GetDividends.call({
+    value: height
+  });
+  dividends = dividends.value ? dividends.value : {};
+  const decimals = await Promise.all(Object.keys(dividends).map(getDecimal));
+  return Object.keys(dividends).reduce((acc, v, i) => ({
+    ...acc,
+    [v]: +dividends[v] / `1e${decimals[i]}`
+  }), {});
+}
+
 module.exports = {
   isProd,
   isResourceTransaction,
   isTokenCreatedTransaction,
   isTokenRelatedTransaction,
-  execCommand
+  execCommand,
+  getFee,
+  getDividend
 };

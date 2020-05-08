@@ -3,13 +3,28 @@
  * @author atom-yang
  * @date 2019-07-23
  */
+const AElf = require('aelf-sdk');
 const deserializeEvents = require('../deserialize/deserializeEvents');
 const {
   deserializeCrossChainTransferInput
 } = require('../deserialize/deserializeTokenContract');
 const { config } = require('../common/constants');
+const {
+  getDividend
+} = require('../common/utils');
 
-function blockFormatter(block) {
+async function blockFormatter(block, transactions) {
+  const fee = transactions.reduce((acc, tx) => tx.elf + acc, 0);
+  const resourceFees = transactions.reduce((acc, tx) => {
+    const { resources = {} } = tx;
+    const result = {
+      ...acc
+    };
+    Object.keys(resources).forEach(key => {
+      result[key] = result[key] || 0 + resources[key];
+    });
+    return result;
+  }, {});
   const { Header, Body, BlockHash } = block;
   const {
     PreviousBlockHash,
@@ -17,8 +32,14 @@ function blockFormatter(block) {
     Height,
     MerkleTreeRootOfTransactions,
     MerkleTreeRootOfWorldState,
-    Time
+    Time,
+    SignerPubkey
   } = Header;
+  const miner = SignerPubkey ? AElf.wallet.getAddressFromPubKey(
+    AElf.wallet.ellipticEc.keyFromPublic(SignerPubkey, 'hex').getPublic()
+  ) : config.contracts.zero;
+  const dividends = await getDividend(Height);
+
   return {
     block_hash: BlockHash,
     pre_block_hash: PreviousBlockHash,
@@ -27,53 +48,33 @@ function blockFormatter(block) {
     tx_count: Body.TransactionsCount,
     merkle_root_tx: MerkleTreeRootOfTransactions,
     merkle_root_state: MerkleTreeRootOfWorldState,
-    time: Time
+    time: Time,
+    tx_fee: fee,
+    resources: JSON.stringify(resourceFees),
+    dividends: JSON.stringify(dividends),
+    miner
   };
-}
-
-/**
- * initial token create
- * @param {string} tokenAddress
- * @param {string} chainId
- * @param {Object} tokenInfo
- * @return {*[]}
- */
-function contractTokenFormatter(tokenAddress, chainId, tokenInfo) {
-  return [
-    tokenAddress,
-    chainId,
-    'inner',
-    'inner',
-    tokenInfo.symbol,
-    tokenInfo.tokenName,
-    tokenInfo.totalSupply,
-    tokenInfo.decimals
-  ];
 }
 
 /**
  * token created transactions
- * @param {Object} tokenInfo
- * @param {string} chainId
+ * @param {Object} transaction
  * @return {Object}
  */
-function tokenCreatedFormatter(tokenInfo, chainId) {
+function tokenCreatedFormatter(transaction) {
   const {
-    Transaction,
-    BlockHash,
+    Logs = [],
     TransactionId
-  } = tokenInfo;
-  const params = JSON.parse(Transaction.Params);
-  return {
-    contract_address: Transaction.To,
-    chain_id: chainId,
-    block_hash: BlockHash,
+  } = transaction;
+  return config.token.deserializeLog(Logs, 'TokenCreated').map(l => ({
+    contract_address: config.contracts.token,
+    chain_id: AElf.utils.chainIdConvertor.chainIdToBase58(l.issueChainId),
     tx_id: TransactionId,
-    symbol: params.symbol,
-    name: params.tokenName,
-    total_supply: params.totalSupply,
-    decimals: params.decimals
-  };
+    symbol: l.symbol,
+    name: l.tokenName,
+    total_supply: l.totalSupply,
+    decimals: l.decimals
+  }));
 }
 
 function resourceFormatter(transaction, block) {
@@ -185,7 +186,9 @@ function transactionFormatter(transaction, blockInfo) {
     quantity: 0, // TODO: 链上为BigInt类型, 所有涉及交易的步骤后续都需要修改。
     tx_status: transaction.Status,
     time: blockInfo.time,
-    logs: transaction.Logs
+    logs: transaction.Logs,
+    tx_fee: transaction.elf,
+    resources: JSON.stringify(transaction.resources)
   };
 
   // 这一套规则是针对token合约的。
@@ -236,7 +239,6 @@ function transactionFormatter(transaction, blockInfo) {
 
 module.exports = {
   blockFormatter,
-  contractTokenFormatter,
   tokenCreatedFormatter,
   resourceFormatter,
   transactionFormatter,

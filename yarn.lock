@@ -702,6 +702,28 @@ aelf-sdk@^3.2.11:
     scryptsy "^2.1.0"
     xmlhttprequest "^1.8.0"
 
+aelf-sdk@^3.2.33:
+  version "3.2.33"
+  resolved "https://registry.yarnpkg.com/aelf-sdk/-/aelf-sdk-3.2.33.tgz#8d60468c75dc687a4502a5b34faa3b907d00accb"
+  integrity sha512-TF11UkCrfP3ctIY+eeZrswP0+19vnA3LK/uDCVo1UmBEnoF9xrwL6DRTXirYdsSkLtHVoVCTEPl7sGfgmtbw2w==
+  dependencies:
+    "@aelfqueen/protobufjs" "^6.8.9"
+    "@babel/runtime" "^7.4.5"
+    assert "^2.0.0"
+    bignumber.js "^9.0.0"
+    bip39 "^3.0.2"
+    browserify-cipher "^1.0.1"
+    bs58 "^4.0.1"
+    buffer "^5.2.1"
+    crypto-js "^3.1.9-1"
+    elliptic "^6.4.1"
+    hdkey "^1.1.1"
+    js-sha256 "^0.9.0"
+    query-string "5.1.1"
+    randombytes "^2.1.0"
+    scryptsy "^2.1.0"
+    xmlhttprequest "^1.8.0"
+
 agent-base@4, agent-base@^4.2.0, agent-base@^4.3.0:
   version "4.3.0"
   resolved "https://registry.yarnpkg.com/agent-base/-/agent-base-4.3.0.tgz#8165f01c436009bccad0b1d122f05ed770efc6ee"

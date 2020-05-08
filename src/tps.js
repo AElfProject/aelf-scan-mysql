@@ -29,12 +29,13 @@ class TPS {
     const latestBlockInTPSTable = await this.query.query('select * from tps_0 order by end DESC limit 1 offset 0', []);
 
     // 数据库中的初始区块时间
-    const firstBlockTime = firstBlockInBlockTable.length ? moment(firstBlockInBlockTable[0].time).unix() : 0;
+    let firstBlockTime = firstBlockInBlockTable.length ? moment(firstBlockInBlockTable[0].time).unix() : 0;
     if (!firstBlockTime) {
       const errorMsg = 'can not find the first block in Database!';
       console.error(errorMsg);
       throw Error(errorMsg);
     }
+    firstBlockTime = Math.floor(firstBlockTime / 60) * 60;
     console.log('init');
 
     // 最新的tps数据的时间

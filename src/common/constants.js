@@ -25,7 +25,6 @@ const TABLE_COLUMNS = {
   CONTRACT: [
     'contract_address',
     'chain_id',
-    'block_hash',
     'tx_id',
     'symbol',
     'name',
@@ -42,6 +41,8 @@ const TABLE_COLUMNS = {
     'params',
     'method',
     'block_hash',
+    'tx_fee',
+    'resources',
     'quantity',
     'tx_status',
     'time'
@@ -56,6 +57,8 @@ const TABLE_COLUMNS = {
     'params',
     'method',
     'block_hash',
+    'tx_fee',
+    'resources',
     'quantity',
     'tx_status',
     'time'
@@ -92,6 +95,10 @@ const TABLE_COLUMNS = {
     'chain_id',
     'block_height',
     'tx_count',
+    'dividends',
+    'miner',
+    'tx_fee',
+    'resources',
     'merkle_root_tx',
     'merkle_root_state',
     'time'
@@ -102,6 +109,10 @@ const TABLE_COLUMNS = {
     'chain_id',
     'block_height',
     'tx_count',
+    'dividends',
+    'miner',
+    'tx_fee',
+    'resources',
     'merkle_root_tx',
     'merkle_root_state',
     'time'
@@ -162,15 +173,28 @@ if (utils.isProd) {
 }
 
 function getContractAddress(contracts) {
-  const contractAddress = {};
   const wallet = AElf.wallet.getWalletByPrivateKey(config.wallet.privateKey);
   const aelf = new AElf(new AElf.providers.HttpProvider(config.scan.host));
   const {
-    GenesisContractAddress
+    GenesisContractAddress,
+    ChainId
   } = aelf.chain.getChainStatus({
     sync: true
   });
+  const contractAddress = {
+    zero: GenesisContractAddress
+  };
   const genContract = aelf.chain.contractAt(GenesisContractAddress, wallet, {
+    sync: true
+  });
+  const dividendName = ChainId === 'AELF' ? 'Treasury' : 'Consensus';
+  const dividendAddress = genContract.GetContractAddressByName.call(AElf.utils.sha256(
+    `AElf.ContractNames.${dividendName}`
+  ), {
+    sync: true
+  });
+  config.chainId = ChainId;
+  config.dividend = aelf.chain.contractAt(dividendAddress, wallet, {
     sync: true
   });
 
@@ -180,6 +204,12 @@ function getContractAddress(contracts) {
     });
   });
   console.log(contractAddress);
+  config.token = aelf.chain.contractAt(contractAddress.token, wallet, {
+    sync: true
+  });
+  config.symbol = (config.token.GetNativeTokenInfo.call({
+    sync: true
+  })).symbol || 'ELF';
   return contractAddress;
 }
 

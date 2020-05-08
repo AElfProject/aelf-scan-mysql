@@ -7,6 +7,9 @@ const {
   DBBaseOperation,
   QUERY_TYPE
 } = require('aelf-block-scan');
+const {
+  getFee
+} = require('../common/utils');
 
 class DBOperation extends DBBaseOperation {
   constructor(option, query) {
@@ -70,7 +73,10 @@ class DBOperation extends DBBaseOperation {
     }
     await this.query.insertBlocksAndTransactions({
       blocks: data.blocks,
-      transactions: data.txs
+      transactions: data.txs.map(txs => txs.map(tx => ({
+        ...tx,
+        ...getFee(tx)
+      })))
     }, isConfirmed);
   }
 

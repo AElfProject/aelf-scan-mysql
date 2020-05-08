@@ -295,10 +295,9 @@ class Query {
   async insertBlocksAndTransactions(data, isConfirmed = true) {
     const { blocks, transactions } = data;
     const connection = await this.getConnection();
-    await this.beginTransaction(connection);
 
     // block入库
-    const formattedBlocks = blocks.map(block => blockFormatter(block));
+    const formattedBlocks = await Promise.all(blocks.map((block, index) => blockFormatter(block, transactions[index])));
 
     const resourceTransactions = transactions
       .map((v = [], i) => v
@@ -307,9 +306,9 @@ class Query {
       .reduce((acc, i) => acc.concat(i), []);
 
     const tokenCreatedTransactions = transactions
-      .map((v = [], i) => v
+      .map((v = []) => v
         .filter(isTokenCreatedTransaction)
-        .map(token => tokenCreatedFormatter(token, formattedBlocks[i].chain_id)))
+        .map(token => tokenCreatedFormatter(token)).reduce((acc, item) => [...acc, ...item], []))
       .reduce((acc, i) => acc.concat(i), []);
 
     const tokenRelatedTransactions = transactions
@@ -321,7 +320,7 @@ class Query {
     const formattedTransactions = transactions
       .map((v = [], i) => v.map(tx => transactionFormatter(tx, formattedBlocks[i])))
       .reduce((acc, i) => acc.concat(i), []);
-
+    await this.beginTransaction(connection);
     const txsLength = formattedTransactions.length;
     const contractTokenRelatedLength = tokenCreatedTransactions.length;
     const resourceLength = resourceTransactions.length;
