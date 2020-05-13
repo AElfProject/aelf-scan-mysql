@@ -97,7 +97,7 @@ async function getDividend(height) {
   let dividends = await config.dividend.GetDividends.call({
     value: height
   });
-  dividends = dividends.value ? dividends.value : {};
+  dividends = dividends && dividends.value ? dividends.value : {};
   const decimals = await Promise.all(Object.keys(dividends).map(getDecimal));
   return Object.keys(dividends).reduce((acc, v, i) => ({
     ...acc,
