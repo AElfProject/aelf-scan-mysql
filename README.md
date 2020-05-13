@@ -1,20 +1,23 @@
 # aelf-scan-mysql
 
-A mysql extension for block scanning
-
-Based on [aelf-block-scan](https://github.com/AElfProject/aelf-block-scan)
-
-Here is a npm package [aelf-block-scan](https://www.npmjs.com/package/aelf-block-scan) which this project is based on. Read the documentations of `aelf-block-scan`.
+A mysql extension for block scanning based on [aelf-block-scan](https://github.com/AElfProject/aelf-block-scan).
 
 ## How to start
 
 ### Installation
 
-`yarn` or `npm i`
+```bash
+git clone https://github.com/AElfProject/aelf-scan-mysql.git
+npm install
+```
 
 - install, configure and keep `mysql` and `redis` server running in localhost
 - use `mysql` create a database named `aelf_main_chain`
-- run `./db/init_sql.sh` script
+
+```bash
+cd ./db/
+bash init_sql.sh
+```
 
 ### Development
 
