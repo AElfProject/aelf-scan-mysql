@@ -4,10 +4,12 @@
  */
 
 const AElf = require('aelf-sdk');
-const tokenContractPb = require('../../proto/token_contract.proto.json');
+const {
+  config
+} = require('../common/constants');
 
 const protobuf = AElf.pbjs;
-const tokenContractRoot = protobuf.Root.fromJSON(tokenContractPb);
+const tokenContractRoot = protobuf.Root.fromDescriptor(config.proto.token);
 
 function deserializeCrossChainTransferInput(base64Str) {
   let result = {};

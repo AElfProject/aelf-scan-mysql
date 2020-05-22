@@ -196,7 +196,8 @@ config.contracts = {
 };
 
 config.proto = {
-  resource: getProto(config.contracts.resource)
+  resource: getProto(config.contracts.resource),
+  token: getProto(config.contracts.token)
 };
 
 module.exports = {
