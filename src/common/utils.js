@@ -4,7 +4,6 @@
  * @date 2019-07-22
  */
 const { exec } = require('child_process');
-const moment = require('moment');
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -21,11 +20,14 @@ function isResourceTransaction(transaction) {
   if (!config.contracts.resource) {
     return false;
   }
-  if (!transaction.Transaction) {
-    console.warn(`${moment().format()} empty transaction ${JSON.stringify(transaction, null, 2)}`);
-  }
-  const { To, MethodName } = transaction.Transaction;
-  return To === config.contracts.resource && (MethodName === 'Buy' || MethodName === 'Sell');
+  const {
+    Logs,
+    Transaction
+  } = transaction;
+  const { To, MethodName } = Transaction;
+  return (
+    To === config.contracts.resource && (MethodName === 'Buy' || MethodName === 'Sell')
+    || (Logs || []).filter(v => v.Name === 'TokenBought' || v.Name === 'TokenSold').length > 0);
 }
 
 // 是否为创建token的交易，进入contract_aelf20表中
