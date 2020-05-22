@@ -302,7 +302,8 @@ class Query {
     const resourceTransactions = transactions
       .map((v = [], i) => v
         .filter(isResourceTransaction)
-        .map(resource => resourceFormatter(resource, formattedBlocks[i])))
+        .map(resource => resourceFormatter(resource, formattedBlocks[i]))
+        .reduce((acc, r) => [...acc, ...r], []))
       .reduce((acc, i) => acc.concat(i), []);
 
     const tokenCreatedTransactions = transactions

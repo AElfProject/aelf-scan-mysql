@@ -79,27 +79,58 @@ function tokenCreatedFormatter(transaction) {
 
 function resourceFormatter(transaction, block) {
   const {
+    Logs = [],
     Status,
     Transaction,
     TransactionId
   } = transaction;
   const { From, MethodName } = Transaction;
-  const params = JSON.parse(Transaction.Params);
-  const eventsDeserialize = deserializeEvents(transaction.Logs);
-  const tradeDetail = eventsDeserialize.find(item => item.name === 'tokenTrade');
-  return {
-    tx_id: TransactionId,
-    address: From,
-    method: MethodName,
-    type: params.symbol || 'none',
-    resource: parseInt(params.amount || 0, 10),
-    elf: tradeDetail && tradeDetail.baseAmount.toString() || 0,
-    fee: tradeDetail && tradeDetail.feeAmount && tradeDetail.feeAmount.toString() || 0,
-    chain_id: block.chain_id,
-    block_height: block.block_height,
-    tx_status: Status,
-    time: block.time
-  };
+  let params;
+  try {
+    params = JSON.parse(Transaction.Params);
+  } catch (e) {
+    params = {};
+  }
+  if (Status.toUpperCase() !== 'MINED') {
+    return [
+      {
+        tx_id: TransactionId,
+        address: From,
+        method: MethodName,
+        type: params.symbol || 'none',
+        resource: parseInt(params.amount || 0, 10),
+        elf: 0,
+        fee: 0,
+        chain_id: block.chain_id,
+        block_height: block.block_height,
+        tx_status: Status,
+        time: block.time
+      }
+    ];
+  }
+  const eventsDeserialize = deserializeEvents(Logs);
+  return eventsDeserialize.map(item => {
+    const {
+      symbol,
+      boughtAmount,
+      baseAmount,
+      feeAmount,
+      soldAmount
+    } = item;
+    return {
+      tx_id: TransactionId,
+      address: From,
+      method: MethodName,
+      type: symbol,
+      resource: boughtAmount || soldAmount,
+      elf: baseAmount,
+      fee: feeAmount,
+      chain_id: block.chain_id,
+      block_height: block.block_height,
+      tx_status: Status,
+      time: block.time
+    };
+  });
 }
 
 function tokenRelatedFormatter(transaction, blockInfo) {

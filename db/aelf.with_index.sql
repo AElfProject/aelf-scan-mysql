@@ -190,7 +190,7 @@ CREATE TABLE `resource_unconfirmed`
     `tx_status`    varchar(64)     NOT NULL,
     `time`         varchar(64)     NOT NULL,
     PRIMARY KEY (`id`) USING BTREE,
-    UNIQUE KEY `tx_id` (`tx_id`) USING BTREE
+    KEY `tx_id` (`tx_id`) USING BTREE
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
 
