@@ -702,10 +702,10 @@ aelf-sdk@^3.2.11:
     scryptsy "^2.1.0"
     xmlhttprequest "^1.8.0"
 
-aelf-sdk@^3.2.33:
-  version "3.2.33"
-  resolved "https://registry.yarnpkg.com/aelf-sdk/-/aelf-sdk-3.2.33.tgz#8d60468c75dc687a4502a5b34faa3b907d00accb"
-  integrity sha512-TF11UkCrfP3ctIY+eeZrswP0+19vnA3LK/uDCVo1UmBEnoF9xrwL6DRTXirYdsSkLtHVoVCTEPl7sGfgmtbw2w==
+aelf-sdk@^3.2.34:
+  version "3.2.34"
+  resolved "https://registry.yarnpkg.com/aelf-sdk/-/aelf-sdk-3.2.34.tgz#842c9d58ff6d5e5663654af5d0331d93683d8c16"
+  integrity sha512-4PhuPw9kZHZvlQFiGVEZjrLLnb4ImxidZTBv/bgyogeWCZNpRvs2jXv/hhrIE0jx/BMHmGQuW7enIBK7P533zg==
   dependencies:
     "@aelfqueen/protobufjs" "^6.8.9"
     "@babel/runtime" "^7.4.5"
