@@ -16,6 +16,7 @@
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
+SET CHARSET utf8mb4;
 
 -- ----------------------------
 -- Table structure for address_contracts
@@ -29,9 +30,8 @@ CREATE TABLE `address_contracts`
     `symbol`           varchar(64)     NOT NULL,
     `update_time`      datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
     PRIMARY KEY (`id`) USING BTREE,
-    UNIQUE KEY (`address`,`contract_address`,`symbol`) USING BTREE
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
+    UNIQUE KEY (`address`, `contract_address`, `symbol`) USING BTREE
+) ENGINE = InnoDB;
 
 -- ----------------------------
 -- Table structure for blocks_0
@@ -58,7 +58,7 @@ CREATE TABLE `blocks_0`
     KEY `time` (`time`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1
-  DEFAULT CHARSET = utf8 PARTITION BY RANGE COLUMNS (`id`) (
+  PARTITION BY RANGE COLUMNS (`id`) (
     PARTITION p0_1 VALUES LESS THAN (10000001),
     PARTITION p1_2 VALUES LESS THAN (20000001),
     PARTITION p2_3 VALUES LESS THAN (30000001),
@@ -91,8 +91,7 @@ CREATE TABLE `blocks_unconfirmed`
     UNIQUE KEY `block_hash` (`block_hash`) USING BTREE,
     UNIQUE KEY `block_height` (`block_height`) USING BTREE,
     KEY `time` (`time`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
+) ENGINE = InnoDB;
 
 -- ----------------------------
 -- Table structure for contract_aelf20
@@ -111,8 +110,7 @@ CREATE TABLE `contract_aelf20`
     PRIMARY KEY (`id`) USING BTREE,
     UNIQUE KEY `address_symbol` (`contract_address`, `symbol`) USING BTREE
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 1
-  DEFAULT CHARSET = utf8;
+  AUTO_INCREMENT = 1;
 
 -- ----------------------------
 -- Table structure for nodes_0
@@ -133,8 +131,7 @@ CREATE TABLE `nodes_0`
     `create_time`      timestamp       NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
     PRIMARY KEY (`id`) USING BTREE,
     UNIQUE KEY `address_chain_id` (`contract_address`, `chain_id`) USING BTREE
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
+) ENGINE = InnoDB;
 
 -- ----------------------------
 -- Table structure for resource_0
@@ -157,19 +154,19 @@ CREATE TABLE `resource_0`
     PRIMARY KEY (`id`) USING BTREE,
     KEY `tx_id` (`tx_id`) USING BTREE
 ) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8 PARTITION BY RANGE COLUMNS (`id`) (
-    PARTITION p0_1 VALUES LESS THAN (10000001),
-    PARTITION p1_2 VALUES LESS THAN (20000001),
-    PARTITION p2_3 VALUES LESS THAN (30000001),
-    PARTITION p3_4 VALUES LESS THAN (40000001),
-    PARTITION p4_5 VALUES LESS THAN (50000001),
-    PARTITION p5_6 VALUES LESS THAN (60000001),
-    PARTITION p6_7 VALUES LESS THAN (70000001),
-    PARTITION p7_8 VALUES LESS THAN (80000001),
-    PARTITION p8_9 VALUES LESS THAN (90000001),
-    PARTITION p9_10 VALUES LESS THAN (100000001),
-    PARTITION p10 VALUES LESS THAN MAXVALUE
-    );
+    PARTITION BY RANGE COLUMNS (`id`) (
+        PARTITION p0_1 VALUES LESS THAN (10000001),
+        PARTITION p1_2 VALUES LESS THAN (20000001),
+        PARTITION p2_3 VALUES LESS THAN (30000001),
+        PARTITION p3_4 VALUES LESS THAN (40000001),
+        PARTITION p4_5 VALUES LESS THAN (50000001),
+        PARTITION p5_6 VALUES LESS THAN (60000001),
+        PARTITION p6_7 VALUES LESS THAN (70000001),
+        PARTITION p7_8 VALUES LESS THAN (80000001),
+        PARTITION p8_9 VALUES LESS THAN (90000001),
+        PARTITION p9_10 VALUES LESS THAN (100000001),
+        PARTITION p10 VALUES LESS THAN MAXVALUE
+        );
 
 -- ----------------------------
 -- Table structure for resource_unconfirmed
@@ -191,8 +188,7 @@ CREATE TABLE `resource_unconfirmed`
     `time`         varchar(64)     NOT NULL,
     PRIMARY KEY (`id`) USING BTREE,
     KEY `tx_id` (`tx_id`) USING BTREE
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
+) ENGINE = InnoDB;
 
 -- ----------------------------
 -- Table structure for tps_0
@@ -211,8 +207,7 @@ CREATE TABLE `tps_0`
     PRIMARY KEY (`id`) USING BTREE,
     UNIQUE KEY `start` (`start`) USING BTREE,
     UNIQUE KEY `end` (`end`) USING BTREE
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
+) ENGINE = InnoDB;
 
 -- ----------------------------
 -- Table structure for transactions_0
@@ -231,8 +226,8 @@ CREATE TABLE `transactions_0`
     `method`       varchar(64)     NOT NULL,
     `block_hash`   varchar(64)     NOT NULL,
     `tx_fee`       DECIMAL(64, 8)  NOT NULL DEFAULT 0,
-    `resources`         varchar(255)    NOT NULL DEFAULT '{}',
-    `quantity`     BIGINT NOT NULL,
+    `resources`    varchar(255)    NOT NULL DEFAULT '{}',
+    `quantity`     BIGINT          NOT NULL,
     `tx_status`    varchar(64)     NOT NULL,
     `time`         varchar(64)     NOT NULL COMMENT 'time of blocks',
     PRIMARY KEY (`id`) USING BTREE,
@@ -245,19 +240,19 @@ CREATE TABLE `transactions_0`
     KEY `block_height` (`block_height`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1
-  DEFAULT CHARSET = utf8 PARTITION BY RANGE COLUMNS (id) (
-    PARTITION p0_1 VALUES LESS THAN (10000001),
-    PARTITION p1_2 VALUES LESS THAN (20000001),
-    PARTITION p2_3 VALUES LESS THAN (30000001),
-    PARTITION p3_4 VALUES LESS THAN (40000001),
-    PARTITION p4_5 VALUES LESS THAN (50000001),
-    PARTITION p5_6 VALUES LESS THAN (60000001),
-    PARTITION p6_7 VALUES LESS THAN (70000001),
-    PARTITION p7_8 VALUES LESS THAN (80000001),
-    PARTITION p8_9 VALUES LESS THAN (90000001),
-    PARTITION p9_10 VALUES LESS THAN (100000001),
-    PARTITION p10 VALUES LESS THAN MAXVALUE
-    );
+    PARTITION BY RANGE COLUMNS (id) (
+        PARTITION p0_1 VALUES LESS THAN (10000001),
+        PARTITION p1_2 VALUES LESS THAN (20000001),
+        PARTITION p2_3 VALUES LESS THAN (30000001),
+        PARTITION p3_4 VALUES LESS THAN (40000001),
+        PARTITION p4_5 VALUES LESS THAN (50000001),
+        PARTITION p5_6 VALUES LESS THAN (60000001),
+        PARTITION p6_7 VALUES LESS THAN (70000001),
+        PARTITION p7_8 VALUES LESS THAN (80000001),
+        PARTITION p8_9 VALUES LESS THAN (90000001),
+        PARTITION p9_10 VALUES LESS THAN (100000001),
+        PARTITION p10 VALUES LESS THAN MAXVALUE
+        );
 
 -- ----------------------------
 -- Table structure for transactions_unconfirmed
@@ -277,7 +272,7 @@ CREATE TABLE `transactions_unconfirmed`
     `block_hash`   varchar(64)     NOT NULL,
     `tx_fee`       DECIMAL(64, 8)  NOT NULL DEFAULT 0,
     `resources`    varchar(255)    NOT NULL DEFAULT '{}',
-    `quantity`     BIGINT NOT NULL,
+    `quantity`     BIGINT          NOT NULL,
     `tx_status`    varchar(64)     NOT NULL,
     `time`         varchar(64)     NOT NULL COMMENT 'time of blocks',
     PRIMARY KEY (`id`) USING BTREE,
@@ -288,8 +283,7 @@ CREATE TABLE `transactions_unconfirmed`
     KEY `address_to` (`address_to`),
     KEY `address_from` (`address_from`),
     KEY `block_height` (`block_height`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
+) ENGINE = InnoDB;
 
 -- ----------------------------
 -- Table structure for user
@@ -307,8 +301,7 @@ CREATE TABLE `user`
     `updated_at` timestamp NULL                   DEFAULT NULL,
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8
-  COLLATE = utf8mb4_bin;
+COLLATE = utf8mb4_bin;
 
 DROP TABLE IF EXISTS `vote_teams`;
 CREATE TABLE `vote_teams`
@@ -322,8 +315,8 @@ CREATE TABLE `vote_teams`
     `tx_id`            VARCHAR(64)  DEFAULT NULL,
     `is_active`        BOOLEAN      DEFAULT FALSE,
     `socials`          JSON,
-    `official_website` TEXT DEFAULT NULL,
-    `location`         TEXT DEFAULT NULL,
+    `official_website` TEXT         DEFAULT NULL,
+    `location`         TEXT         DEFAULT NULL,
     `mail`             VARCHAR(255) DEFAULT NULL,
     `update_time`      DATETIME     DEFAULT CURRENT_TIMESTAMP(),
     PRIMARY KEY (`id`),
@@ -332,8 +325,7 @@ CREATE TABLE `vote_teams`
     KEY `name` (`name`),
     UNIQUE KEY `key_time` (`public_key`, `update_time`) USING BTREE
 ) ENGINE = InnoDB
-  auto_increment = 1
-  DEFAULT CHARSET = utf8;
+  auto_increment = 1;
 
 -- ----------------------------
 -- Table structure for token related transactions
@@ -361,8 +353,7 @@ CREATE TABLE `transactions_token`
     KEY `address_to` (`address_to`),
     KEY `symbol` (`symbol`)
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 1
-  DEFAULT CHARSET = utf8;
+  AUTO_INCREMENT = 1;
 
 DROP TABLE IF EXISTS `transactions_token_unconfirmed`;
 CREATE TABLE `transactions_token_unconfirmed`
@@ -387,7 +378,6 @@ CREATE TABLE `transactions_token_unconfirmed`
     KEY `address_to` (`address_to`),
     KEY `symbol` (`symbol`)
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 1
-  DEFAULT CHARSET = utf8;
+  AUTO_INCREMENT = 1;
 
 SET FOREIGN_KEY_CHECKS = 1;
