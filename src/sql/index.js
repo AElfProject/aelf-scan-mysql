@@ -164,10 +164,10 @@ class Query {
 
   async getMissingHeights() {
     const maxHeight = parseInt(await this.getMaxHeight(), 10);
-    const blockCount = await this.redisQuery.promisifyCommand('get', config.redis.keys.blocksCount);
-    if (maxHeight === parseInt(blockCount, 10)) {
-      return [];
-    }
+    // const blockCount = await this.redisQuery.promisifyCommand('get', config.redis.keys.blocksCount);
+    // if (maxHeight === parseInt(blockCount, 10)) {
+    //   return [];
+    // }
     let missingHeights = [];
     const range = 50000;
     for (let i = 1; i <= maxHeight; i += range) {

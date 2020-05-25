@@ -307,7 +307,7 @@ CREATE TABLE `user`
     `updated_at` timestamp NULL                   DEFAULT NULL,
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4
+  DEFAULT CHARSET = utf8
   COLLATE = utf8mb4_bin;
 
 DROP TABLE IF EXISTS `vote_teams`;
@@ -361,7 +361,8 @@ CREATE TABLE `transactions_token`
     KEY `address_to` (`address_to`),
     KEY `symbol` (`symbol`)
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 1;
+  AUTO_INCREMENT = 1
+  DEFAULT CHARSET = utf8;
 
 DROP TABLE IF EXISTS `transactions_token_unconfirmed`;
 CREATE TABLE `transactions_token_unconfirmed`
@@ -386,6 +387,7 @@ CREATE TABLE `transactions_token_unconfirmed`
     KEY `address_to` (`address_to`),
     KEY `symbol` (`symbol`)
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 1;
+  AUTO_INCREMENT = 1
+  DEFAULT CHARSET = utf8;
 
 SET FOREIGN_KEY_CHECKS = 1;
