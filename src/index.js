@@ -47,7 +47,10 @@ class CustomInsert {
 
   async init() {
     // 插入表中
-    this.sqlQuery = new Query(config.sql);
+    this.sqlQuery = new Query({
+      ...config.sql,
+      charset: 'utf8mb4'
+    });
     const hasNodeInfo = await this.sqlQuery.hasNodeInfo();
     if (!hasNodeInfo) {
       await this.sqlQuery.insertNodesInfo([
