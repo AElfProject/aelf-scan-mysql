@@ -12,18 +12,49 @@ const {
   isResourceTransaction,
   isTokenCreatedTransaction,
   isTokenRelatedTransaction,
+  isSymbolEvent
 } = require('../common/utils');
 const {
   blockFormatter,
   transactionFormatter,
   resourceFormatter,
+  symbolEventFormatter,
   tokenCreatedFormatter,
   tokenRelatedFormatter
 } = require('../formatters/index');
+const {
+  tokenBalanceChangedFormatter,
+  filterBalanceChangedTransaction
+} = require('../formatters/balance');
 const { TABLE_NAME, TABLE_COLUMNS } = require('../common/constants');
 
 bluebird.promisifyAll(redis.RedisClient.prototype);
 bluebird.promisifyAll(redis.Multi.prototype);
+
+const FEE_EVENTS = [
+  'TransactionFeeCharged',
+  'ResourceTokenCharged',
+  'ResourceTokenOwned'
+];
+
+function flatMapEvents(transactions) {
+  return transactions.reduce((acc, transaction) => {
+    const {
+      Logs = [],
+      TransactionId
+    } = transaction;
+    const filteredLogs = (Logs || []).filter(item => !FEE_EVENTS.includes(item.Name));
+    return [...acc, ...filteredLogs.map(item => ({
+      tx_id: TransactionId,
+      name: item.Name,
+      address: item.Address,
+      data: JSON.stringify({
+        Indexed: item.Indexed,
+        NonIndexed: item.NonIndexed
+      })
+    }))];
+  }, []);
+}
 
 class Query {
   constructor(option) {
@@ -198,16 +229,6 @@ class Query {
     return missingHeights;
   }
 
-  async insertContract(tokenInfo, connection = null) {
-    const keys = TABLE_COLUMNS.CONTRACT;
-    const valuesBlank = `(${keys.map(() => '?').join(',')})`;
-
-    const keysStr = `(${keys.join(',')})`;
-    // eslint-disable-next-line max-len
-    const sql = `insert into ${TABLE_NAME.CONTRACT} ${keysStr} VALUES ${valuesBlank} ON DUPLICATE KEY UPDATE contract_address=VALUES(contract_address);`;
-    await this.query(sql, tokenInfo, connection);
-  }
-
   async insertTokenCreatedTransactions(transactions = [], isConfirmed = true, connection = null) {
     if (transactions.length === 0 || !isConfirmed) {
       return;
@@ -238,6 +259,57 @@ class Query {
       values
     } = Query.prepareInsertParams(transactions, keys);
     const sql = `${select} ${tableName} ${keysStr} VALUES ${valuesStr};`;
+    await this.query(sql, values, connection);
+  }
+
+  async insertEvents(events = [], isConfirmed = true, connection) {
+    if (events.length === 0 || !isConfirmed) {
+      return;
+    }
+    const keys = TABLE_COLUMNS.EVENTS;
+    const tableName = TABLE_NAME.EVENTS;
+    const select = 'insert into';
+    const {
+      valuesStr,
+      keysStr,
+      values
+    } = Query.prepareInsertParams(events, keys);
+
+    const sql = `${select} ${tableName} ${keysStr} VALUES ${valuesStr}`;
+    await this.query(sql, values, connection);
+  }
+
+  async insertBalance(list = [], isConfirmed = true, connection) {
+    if (list.length === 0 || !isConfirmed) {
+      return;
+    }
+    const keys = TABLE_COLUMNS.BALANCE;
+    const tableName = TABLE_NAME.BALANCE;
+    const select = 'insert into';
+    const {
+      valuesStr,
+      keysStr,
+      values
+    } = Query.prepareInsertParams(list, keys);
+
+    const sql = `${select} ${tableName} ${keysStr} VALUES ${valuesStr} ON DUPLICATE KEY UPDATE count = count + 1`;
+    await this.query(sql, values, connection);
+  }
+
+  async insertTokenTx(txs = [], isConfirmed = true, connection) {
+    if (txs.length === 0 || !isConfirmed) {
+      return;
+    }
+    const keys = TABLE_COLUMNS.TOKEN_TX;
+    const tableName = TABLE_NAME.TOKEN_TX;
+    const select = 'insert into';
+    const {
+      valuesStr,
+      keysStr,
+      values
+    } = Query.prepareInsertParams(txs, keys);
+
+    const sql = `${select} ${tableName} ${keysStr} VALUES ${valuesStr}`;
     await this.query(sql, values, connection);
   }
 
@@ -293,11 +365,28 @@ class Query {
   }
 
   async insertBlocksAndTransactions(data, isConfirmed = true) {
-    const { blocks, transactions } = data;
+    const { blocks, transactions, type } = data;
     const connection = await this.getConnection();
 
     // block入库
     const formattedBlocks = await Promise.all(blocks.map((block, index) => blockFormatter(block, transactions[index])));
+
+    const events = transactions
+      .map(t => flatMapEvents(t))
+      .reduce((acc, v) => [...acc, ...v], []);
+
+    const balances = isConfirmed ? (await Promise.all(transactions
+      .reduce((acc, v, i) => [
+        ...acc,
+        ...v.map(inner => ({ ...inner, time: blocks[i].Header.Time }))], [])
+      .filter(filterBalanceChangedTransaction)
+      .map(v => tokenBalanceChangedFormatter(v, type, this.pool)))
+      .then(res => res.reduce((acc, v) => [...acc, ...v], []))) : [];
+
+    const tokenTx = await Promise.all(transactions
+      .reduce((acc, v) => [...acc, ...v], [])
+      .filter(isSymbolEvent)
+      .map(v => symbolEventFormatter(v))).then(res => res.reduce((acc, v) => [...acc, ...v], []));
 
     const resourceTransactions = transactions
       .map((v = [], i) => v
@@ -331,9 +420,12 @@ class Query {
       await Promise.all([
         this.insertBlocks(formattedBlocks, isConfirmed, connection),
         this.insertTransactions(formattedTransactions, isConfirmed, connection),
+        this.insertEvents(events, isConfirmed, connection),
         this.insertResourceTransactions(resourceTransactions, isConfirmed, connection),
         this.insertTokenCreatedTransactions(tokenCreatedTransactions, isConfirmed, connection),
-        this.insertTokenRelatedTransactions(tokenRelatedTransactions, isConfirmed, connection)
+        this.insertTokenRelatedTransactions(tokenRelatedTransactions, isConfirmed, connection),
+        this.insertTokenTx(tokenTx, isConfirmed, connection),
+        this.insertBalance(balances, isConfirmed, connection),
       ]);
       connection.commit(async err => {
         if (err) {

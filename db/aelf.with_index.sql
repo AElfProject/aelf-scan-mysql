@@ -106,6 +106,7 @@ CREATE TABLE `contract_aelf20`
     `tx_id`            varchar(64)     NOT NULL,
     `name`             varchar(64)     NOT NULL,
     `total_supply`     bigint unsigned NOT NULL,
+    `supply`           bigint unsigned NOT NULL,
     `decimals`         int DEFAULT 8,
     PRIMARY KEY (`id`) USING BTREE,
     UNIQUE KEY `address_symbol` (`contract_address`, `symbol`) USING BTREE
@@ -379,5 +380,73 @@ CREATE TABLE `transactions_token_unconfirmed`
     KEY `symbol` (`symbol`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1;
+
+DROP TABLE IF EXISTS `events`;
+CREATE TABLE `events`
+(
+    `id`      bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+    `tx_id`   varchar(64)         NOT NULL,
+    `name`    varchar(255)        NOT NULL,
+    `address` varchar(64)         NOT NULL,
+    `data`    text                NOT NULL,
+    PRIMARY KEY (`id`),
+    KEY `address` (`address`) USING BTREE,
+    KEY `name` (`name`) USING BTREE,
+    KEY `tx_id` (`tx_id`) USING BTREE
+) ENGINE = InnoDB
+  AUTO_INCREMENT = 1
+    PARTITION BY RANGE COLUMNS (id) (
+        PARTITION p0_1 VALUES LESS THAN (10000001),
+        PARTITION p1_2 VALUES LESS THAN (20000001),
+        PARTITION p2_3 VALUES LESS THAN (30000001),
+        PARTITION p3_4 VALUES LESS THAN (40000001),
+        PARTITION p4_5 VALUES LESS THAN (50000001),
+        PARTITION p5_6 VALUES LESS THAN (60000001),
+        PARTITION p6_7 VALUES LESS THAN (70000001),
+        PARTITION p7_8 VALUES LESS THAN (80000001),
+        PARTITION p8_9 VALUES LESS THAN (90000001),
+        PARTITION p9_10 VALUES LESS THAN (100000001),
+        PARTITION p10 VALUES LESS THAN MAXVALUE
+    );
+
+DROP TABLE IF EXISTS `token_tx`;
+CREATE TABLE `token_tx`
+(
+    `id`     bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+    `tx_id`  varchar(64)         NOT NULL,
+    `event`  varchar(255)        NOT NULL,
+    `symbol` varchar(255)        NOT NULL,
+    PRIMARY KEY (`id`),
+    KEY `symbol` (`symbol`) USING BTREE,
+    KEY `tx_id` (`tx_id`) USING BTREE
+) ENGINE = InnoDB
+  AUTO_INCREMENT = 1
+    PARTITION BY RANGE COLUMNS (id) (
+        PARTITION p0_1 VALUES LESS THAN (10000001),
+        PARTITION p1_2 VALUES LESS THAN (20000001),
+        PARTITION p2_3 VALUES LESS THAN (30000001),
+        PARTITION p3_4 VALUES LESS THAN (40000001),
+        PARTITION p4_5 VALUES LESS THAN (50000001),
+        PARTITION p5_6 VALUES LESS THAN (60000001),
+        PARTITION p6_7 VALUES LESS THAN (70000001),
+        PARTITION p7_8 VALUES LESS THAN (80000001),
+        PARTITION p8_9 VALUES LESS THAN (90000001),
+        PARTITION p9_10 VALUES LESS THAN (100000001),
+        PARTITION p10 VALUES LESS THAN MAXVALUE
+        );
+
+drop table IF EXISTS `balance`;
+create TABLE `balance` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `owner` varchar(255) NOT NULL,
+  `symbol` varchar(255) NOT NULL DEFAULT 'none',
+  `balance` decimal(64,8) NOT NULL DEFAULT '0.00000000',
+  `count` bigint(20) NOT NULL DEFAULT '0',
+  `updated_at` varchar(64) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `owner_symbol` (`owner`,`symbol`),
+  KEY `owner` (`owner`),
+  KEY `symbol` (`symbol`)
+) ENGINE=InnoDB AUTO_INCREMENT = 1;
 
 SET FOREIGN_KEY_CHECKS = 1;

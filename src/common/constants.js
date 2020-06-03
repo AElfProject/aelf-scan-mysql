@@ -18,7 +18,10 @@ const TABLE_NAME = {
   RESOURCE_TPS: 'tps_resource',
   TRANSACTION_TOKEN: 'transactions_token',
   TRANSACTION_TOKEN_UNCONFIRMED: 'transactions_token_unconfirmed',
-  NODE_INFOS: 'nodes_0'
+  NODE_INFOS: 'nodes_0',
+  EVENTS: 'events',
+  TOKEN_TX: 'token_tx',
+  BALANCE: 'balance'
 };
 
 const TABLE_COLUMNS = {
@@ -29,6 +32,7 @@ const TABLE_COLUMNS = {
     'symbol',
     'name',
     'total_supply',
+    'supply',
     'decimals'
   ],
   TRANSACTION_CONFIRMED: [
@@ -160,6 +164,24 @@ const TABLE_COLUMNS = {
     'token_name',
     'owner',
     'status'
+  ],
+  EVENTS: [
+    'tx_id',
+    'name',
+    'address',
+    'data'
+  ],
+  TOKEN_TX: [
+    'tx_id',
+    'event',
+    'symbol'
+  ],
+  BALANCE: [
+    'owner',
+    'symbol',
+    'balance',
+    'count',
+    'updated_at'
   ]
 };
 
@@ -210,6 +232,11 @@ function getContractAddress(contracts) {
   config.symbol = (config.token.GetNativeTokenInfo.call({
     sync: true
   })).symbol || 'ELF';
+  config.aelf = aelf;
+  // eslint-disable-next-line max-len
+  contractAddress.crossChain = genContract.GetContractAddressByName.call(AElf.utils.sha256('AElf.ContractNames.CrossChain'), {
+    sync: true
+  });
   return contractAddress;
 }
 

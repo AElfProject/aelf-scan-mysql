@@ -40,18 +40,18 @@ class DBOperation extends DBBaseOperation {
         break;
       case QUERY_TYPE.MISSING:
         console.log('MISSING');
-        await this.insertHeight(data);
+        await this.insertHeight(data, type);
         break;
       case QUERY_TYPE.GAP:
         console.log('GAP');
         console.log('LIBHeight', LIBHeight);
-        await this.insertHeight(data);
+        await this.insertHeight(data, type);
         break;
       case QUERY_TYPE.LOOP:
         console.log('LOOP');
         console.log('bestHeight', bestHeight);
         console.log('LIBHeight', LIBHeight);
-        await this.insertLoop(data);
+        await this.insertLoop(data, type);
         break;
       case QUERY_TYPE.ERROR:
         console.log('ERROR');
@@ -66,7 +66,7 @@ class DBOperation extends DBBaseOperation {
     }
   }
 
-  async insertHeight(data, isConfirmed = true) {
+  async insertHeight(data, type, isConfirmed = true) {
     // insert confirmed blocks and transactions
     if (data.blocks.length === 0) {
       return;
@@ -76,11 +76,12 @@ class DBOperation extends DBBaseOperation {
       transactions: data.txs.map(txs => txs.map(tx => ({
         ...tx,
         ...getFee(tx)
-      })))
+      }))),
+      type
     }, isConfirmed);
   }
 
-  async insertLoop(data) {
+  async insertLoop(data, type) {
     const {
       LIBHeight,
       blocks,
@@ -92,12 +93,12 @@ class DBOperation extends DBBaseOperation {
       blocks: blocks.filter(v => +v.Header.Height <= LIBHeight),
       txs: txs.filter((v, i) => +blocks[i].Header.Height <= LIBHeight)
     };
-    await this.insertHeight(confirmedData);
+    await this.insertHeight(confirmedData, type);
     const unconfirmedData = {
       blocks: blocks.filter(v => +v.Header.Height > LIBHeight),
       txs: txs.filter((v, i) => +blocks[i].Header.Height > LIBHeight)
     };
-    await this.insertHeight(unconfirmedData, false);
+    await this.insertHeight(unconfirmedData, type, false);
     await this.query.setUnconfirmCounts(blocks.length, unconfirmedData.txs.reduce((acc, i) => acc.concat(i), []));
   }
 

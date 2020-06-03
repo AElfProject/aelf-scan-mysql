@@ -10,7 +10,9 @@ const {
 } = require('../deserialize/deserializeTokenContract');
 const { config } = require('../common/constants');
 const {
-  getDividend
+  getDividend,
+  SYMBOL_EVENTS,
+  deserializeLogs
 } = require('../common/utils');
 
 async function blockFormatter(block, transactions) {
@@ -73,6 +75,7 @@ function tokenCreatedFormatter(transaction) {
     symbol: l.symbol,
     name: l.tokenName,
     total_supply: l.totalSupply,
+    supply: 0,
     decimals: l.decimals
   }));
 }
@@ -268,10 +271,28 @@ function transactionFormatter(transaction, blockInfo) {
   return output;
 }
 
+async function symbolEventFormatter(transaction) {
+  const {
+    TransactionId,
+    Logs = []
+  } = transaction;
+  const logs = (Logs || []).filter(v => SYMBOL_EVENTS.includes(v.Name));
+  if (logs.length === 0) {
+    return [];
+  }
+  const results = await Promise.all(SYMBOL_EVENTS.map(name => deserializeLogs(logs, name)));
+  return results.reduce((acc, v) => ([...acc, ...v.map(w => ({
+    event: w.name,
+    symbol: w.deserializeLogResult.symbol || w.deserializeLogResult.tokenSymbol,
+    tx_id: TransactionId
+  }))]), []);
+}
+
 module.exports = {
   blockFormatter,
   tokenCreatedFormatter,
   resourceFormatter,
   transactionFormatter,
-  tokenRelatedFormatter
+  tokenRelatedFormatter,
+  symbolEventFormatter
 };
