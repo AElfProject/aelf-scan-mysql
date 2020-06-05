@@ -293,16 +293,15 @@ DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user`
 (
     `id`         bigint    NOT NULL,
-    `address`    varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
-    `name`       varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
-    `avatar_url` varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
-    `phone`      varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
-    `password`   varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
+    `address`    varchar(255) DEFAULT NULL,
+    `name`       varchar(255) DEFAULT NULL,
+    `avatar_url` varchar(255) DEFAULT NULL,
+    `phone`      varchar(255) DEFAULT NULL,
+    `password`   varchar(255) DEFAULT NULL,
     `created_at` timestamp NULL                   DEFAULT NULL,
     `updated_at` timestamp NULL                   DEFAULT NULL,
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB
-COLLATE = utf8mb4_bin;
+) ENGINE = InnoDB;
 
 DROP TABLE IF EXISTS `vote_teams`;
 CREATE TABLE `vote_teams`
@@ -388,7 +387,7 @@ CREATE TABLE `events`
     `tx_id`   varchar(64)         NOT NULL,
     `name`    varchar(255)        NOT NULL,
     `address` varchar(64)         NOT NULL,
-    `data`    text                NOT NULL,
+    `data`    longtext                NOT NULL,
     PRIMARY KEY (`id`),
     KEY `address` (`address`) USING BTREE,
     KEY `name` (`name`) USING BTREE,
