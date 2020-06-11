@@ -16,7 +16,16 @@ const {
 } = require('../common/utils');
 
 async function blockFormatter(block, transactions) {
-  const fee = transactions.reduce((acc, tx) => tx.elf + acc, 0);
+  const blockFee = transactions.reduce((acc, tx) => {
+    const { fee = {} } = tx;
+    const result = {
+      ...acc
+    };
+    Object.keys(fee).forEach(key => {
+      result[key] = result[key] || 0 + fee[key];
+    });
+    return result;
+  }, {});
   const resourceFees = transactions.reduce((acc, tx) => {
     const { resources = {} } = tx;
     const result = {
@@ -51,7 +60,7 @@ async function blockFormatter(block, transactions) {
     merkle_root_tx: MerkleTreeRootOfTransactions,
     merkle_root_state: MerkleTreeRootOfWorldState,
     time: Time,
-    tx_fee: fee,
+    tx_fee: JSON.stringify(blockFee),
     resources: JSON.stringify(resourceFees),
     dividends: JSON.stringify(dividends),
     miner
@@ -221,7 +230,7 @@ function transactionFormatter(transaction, blockInfo) {
     tx_status: transaction.Status,
     time: blockInfo.time,
     logs: transaction.Logs,
-    tx_fee: transaction.elf,
+    tx_fee: JSON.stringify(transaction.fee),
     resources: JSON.stringify(transaction.resources)
   };
 

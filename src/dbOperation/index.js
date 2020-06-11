@@ -71,12 +71,18 @@ class DBOperation extends DBBaseOperation {
     if (data.blocks.length === 0) {
       return;
     }
+    const list = [];
+    // eslint-disable-next-line no-restricted-syntax
+    for (const txs of data.txs) {
+      // eslint-disable-next-line no-await-in-loop
+      list.push(await Promise.all(txs.map(async tx => ({
+        ...tx,
+        ...(await getFee(tx))
+      }))));
+    }
     await this.query.insertBlocksAndTransactions({
       blocks: data.blocks,
-      transactions: data.txs.map(txs => txs.map(tx => ({
-        ...tx,
-        ...getFee(tx)
-      }))),
+      transactions: list,
       type
     }, isConfirmed);
   }

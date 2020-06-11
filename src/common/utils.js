@@ -5,6 +5,7 @@
  */
 const AElf = require('aelf-sdk');
 const moment = require('moment');
+const Decimal = require('decimal.js');
 const { exec } = require('child_process');
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -68,20 +69,6 @@ function execCommand(command) {
   });
 }
 
-function getFee(transaction) {
-  const elfFee = AElf.pbUtils.getTransactionFee(transaction.Logs || []);
-  const resourceFees = AElf.pbUtils.getResourceFee(transaction.Logs || []);
-  return {
-    elf: elfFee.length === 0 ? 0 : (+elfFee[0].amount / 1e8),
-    resources: resourceFees.map(v => ({
-      ...v,
-      amount: (+v.amount / 1e8)
-    })).reduce((acc, v) => ({
-      ...acc,
-      [v.symbol]: v.amount
-    }), {})
-  };
-}
 const TOKEN_DECIMALS = {
   ELF: 8
 };
@@ -96,6 +83,30 @@ async function getDecimal(symbol) {
   }
   return TOKEN_DECIMALS[symbol] || 8;
 }
+
+async function getFee(transaction) {
+  const fee = AElf.pbUtils.getTransactionFee(transaction.Logs || []);
+  const resourceFees = AElf.pbUtils.getResourceFee(transaction.Logs || []);
+  const feeDecimals = await Promise.all(fee.map(f => getDecimal(f.symbol)));
+  const resourceDecimals = await Promise.all(resourceFees.map(f => getDecimal(f.symbol)));
+  return {
+    fee: fee.map((v, i) => ({
+      ...v,
+      amount: new Decimal(v.amount).dividedBy(`1e${feeDecimals[i] || 8}`).toNumber()
+    })).reduce((acc, v) => ({
+      ...acc,
+      [v.symbol]: v.amount
+    }), {}),
+    resources: resourceFees.map((v, i) => ({
+      ...v,
+      amount: new Decimal(v.amount).dividedBy(`1e${resourceDecimals[i] || 8}`).toNumber()
+    })).reduce((acc, v) => ({
+      ...acc,
+      [v.symbol]: v.amount
+    }), {})
+  };
+}
+
 async function getDividend(height) {
   let dividends = await config.dividend.GetDividends.call({
     value: height
