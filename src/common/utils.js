@@ -175,7 +175,12 @@ async function deserializeLogs(logs = [], logName) {
       serializedData.push(NonIndexed);
     }
     let deserializeLogResult = serializedData.reduce((acc, v) => {
-      let deserialize = dataType.decode(Buffer.from(v, 'base64'));
+      let deserialize;
+      try {
+        deserialize = dataType.decode(Buffer.from(v, 'base64'));
+      } catch (e) {
+        deserialize = '';
+      }
       deserialize = dataType.toObject(deserialize, {
         enums: String, // enums as string names
         longs: String, // longs as strings (requires long.js)
