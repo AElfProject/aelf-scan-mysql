@@ -33,12 +33,19 @@ function isResourceTransaction(transaction) {
     || (Logs || []).filter(v => v.Name === 'TokenBought' || v.Name === 'TokenSold').length > 0);
 }
 
+function isOldTokenCreatedTransaction(transaction) {
+  return (transaction.Status.toUpperCase() === 'MINED'
+    && transaction.Transaction
+    && transaction.Transaction.To === config.contracts.token
+    && transaction.Transaction.MethodName === 'Create');
+}
+
 // 是否为创建token的交易，进入contract_aelf20表中
 function isTokenCreatedTransaction(transaction) {
-  return !!(transaction.Status === 'Mined'
+  return (transaction.Status.toUpperCase() === 'MINED'
     && Array.isArray(transaction.Logs)
     && transaction.Logs.filter(log => log.Name === 'TokenCreated'
-      && log.Address === config.contracts.token));
+      && log.Address === config.contracts.token)).length > 0 || isOldTokenCreatedTransaction(transaction);
 }
 
 // 是否为对token相关的交易，token转移等

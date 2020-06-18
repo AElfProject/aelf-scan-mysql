@@ -8,8 +8,8 @@ const {
 const AElf = require('aelf-sdk');
 const Query = require('./sql/index');
 const DBOperation = require('./dbOperation/index');
+const { contractTokenFormatter } = require('./formatters/index');
 const { config } = require('./common/constants');
-// const tps = require('./tps.js');
 const { sendEmails } = require('./emails');
 
 let customInsert;
@@ -47,10 +47,18 @@ class CustomInsert {
 
   async init() {
     // 插入表中
+    const tokenInfo = await this.getELFTokenInfo();
+    const primaryTokenInfo = await this.getPrimaryTokenInfo(tokenInfo.symbol);
     this.sqlQuery = new Query({
       ...config.sql,
       charset: 'utf8mb4'
     });
+    await this.sqlQuery.insertContract(contractTokenFormatter(tokenInfo));
+    if (primaryTokenInfo) {
+      await this.sqlQuery.insertContract(contractTokenFormatter(primaryTokenInfo));
+    }
+    const resources = await this.getResourceTokenInfo();
+    await Promise.all(resources.map(v => this.sqlQuery.insertContract(contractTokenFormatter(v))));
     const hasNodeInfo = await this.sqlQuery.hasNodeInfo();
     if (!hasNodeInfo) {
       await this.sqlQuery.insertNodesInfo([
@@ -60,7 +68,7 @@ class CustomInsert {
         config.blockApi,
         config.scan.host,
         config.scan.host,
-        config.symbol || 'ELF',
+        tokenInfo.symbol,
         'owner',
         1
       ]);
@@ -72,10 +80,6 @@ class CustomInsert {
     try {
       await this.scanner.start();
       console.log('start loop');
-      // setTimeout(() => {
-      //   console.log('start count tps');
-      //   tps.init();
-      // }, 120000);
     } catch (err) {
       console.error('root catch', err);
       await sendEmails(err);
@@ -89,6 +93,28 @@ class CustomInsert {
       customInsert.sqlQuery.close();
     }
     process.exit(1);
+  }
+
+  getELFTokenInfo() {
+    return config.token.GetNativeTokenInfo.call();
+  }
+
+  async getPrimaryTokenInfo(symbol) {
+    const tokenContract = config.token;
+    const {
+      value: primaryTokenSymbol
+    } = await tokenContract.GetPrimaryTokenSymbol.call();
+    if (primaryTokenSymbol !== symbol) {
+      return tokenContract.GetTokenInfo.call({
+        symbol: primaryTokenSymbol
+      });
+    }
+    return null;
+  }
+
+  async getResourceTokenInfo() {
+    const { value: resource } = await config.token.GetResourceTokenInfo.call();
+    return resource || [];
   }
 
   async getConfig() {
@@ -105,7 +131,6 @@ class CustomInsert {
   }
 
   async restart() {
-    // tps.stop();
     await this.init();
   }
 }

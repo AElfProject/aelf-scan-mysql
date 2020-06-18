@@ -330,6 +330,16 @@ class Query {
     await this.query(sql, values, connection);
   }
 
+  async insertContract(tokenInfo, connection = null) {
+    const keys = TABLE_COLUMNS.CONTRACT;
+    const valuesBlank = `(${keys.map(() => '?').join(',')})`;
+
+    const keysStr = `(${keys.join(',')})`;
+    // eslint-disable-next-line max-len
+    const sql = `insert into ${TABLE_NAME.CONTRACT} ${keysStr} VALUES ${valuesBlank} ON DUPLICATE KEY UPDATE contract_address=VALUES(contract_address);`;
+    await this.query(sql, tokenInfo, connection);
+  }
+
   async insertTransactions(transactions = [], isConfirmed = true, connection = null) {
     if (transactions.length === 0) {
       return;
@@ -398,7 +408,7 @@ class Query {
     const tokenCreatedTransactions = transactions
       .map((v = []) => v
         .filter(isTokenCreatedTransaction)
-        .map(token => tokenCreatedFormatter(token)).reduce((acc, item) => [...acc, ...item], []))
+        .map(token => tokenCreatedFormatter(token, config.chainId)).reduce((acc, item) => [...acc, ...item], []))
       .reduce((acc, i) => acc.concat(i), []);
 
     const tokenRelatedTransactions = transactions

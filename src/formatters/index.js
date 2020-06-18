@@ -68,16 +68,43 @@ async function blockFormatter(block, transactions) {
 }
 
 /**
+ * initial token create
+ * @param {string} tokenAddress
+ * @param {string} chainId
+ * @param {Object} tokenInfo
+ * @return {*[]}
+ */
+function contractTokenFormatter(tokenInfo) {
+  return [
+    config.contracts.token,
+    AElf.utils.chainIdConvertor.chainIdToBase58(tokenInfo.issueChainId),
+    'inner',
+    tokenInfo.symbol,
+    tokenInfo.tokenName,
+    tokenInfo.totalSupply,
+    tokenInfo.supply,
+    tokenInfo.decimals
+  ];
+}
+
+
+/**
  * token created transactions
  * @param {Object} transaction
  * @return {Object}
  */
-function tokenCreatedFormatter(transaction) {
+function tokenCreatedFormatter(transaction, chainId) {
   const {
     Logs = [],
-    TransactionId
+    TransactionId,
+    Transaction,
+    BlockHash
   } = transaction;
-  return config.token.deserializeLog(Logs, 'TokenCreated').map(l => ({
+  const {
+    Params,
+    To
+  } = Transaction;
+  const list = config.token.deserializeLog(Logs, 'TokenCreated').map(l => ({
     contract_address: config.contracts.token,
     chain_id: AElf.utils.chainIdConvertor.chainIdToBase58(l.issueChainId),
     tx_id: TransactionId,
@@ -87,6 +114,23 @@ function tokenCreatedFormatter(transaction) {
     supply: 0,
     decimals: l.decimals
   }));
+  if (list.length > 0) {
+    return list;
+  }
+  const params = JSON.parse(Params);
+  return [
+    {
+      contract_address: To,
+      chain_id: chainId,
+      block_hash: BlockHash,
+      tx_id: TransactionId,
+      symbol: params.symbol,
+      name: params.tokenName,
+      total_supply: params.totalSupply,
+      supply: 0,
+      decimals: params.decimals
+    }
+  ];
 }
 
 function resourceFormatter(transaction, block) {
@@ -303,5 +347,6 @@ module.exports = {
   resourceFormatter,
   transactionFormatter,
   tokenRelatedFormatter,
-  symbolEventFormatter
+  symbolEventFormatter,
+  contractTokenFormatter
 };
