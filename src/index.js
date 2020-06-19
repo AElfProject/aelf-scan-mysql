@@ -58,7 +58,9 @@ class CustomInsert {
       await this.sqlQuery.insertContract(contractTokenFormatter(primaryTokenInfo));
     }
     const resources = await this.getResourceTokenInfo();
-    await Promise.all(resources.map(v => this.sqlQuery.insertContract(contractTokenFormatter(v))));
+    await Promise.all(resources.filter(v => !!v).map(v => this.sqlQuery.insertContract(contractTokenFormatter(v))));
+    const inlineTokens = await this.getInlineToken();
+    await Promise.all(inlineTokens.filter(v => !!v).map(v => this.sqlQuery.insertContract(contractTokenFormatter(v))));
     const hasNodeInfo = await this.sqlQuery.hasNodeInfo();
     if (!hasNodeInfo) {
       await this.sqlQuery.insertNodesInfo([
@@ -85,6 +87,13 @@ class CustomInsert {
       await sendEmails(err);
       this.cleanup();
     }
+  }
+
+  async getInlineToken() {
+    return Promise.all([
+      'VOTE',
+      'SHARE'
+    ].map(symbol => config.token.GetTokenInfo.call({ symbol })));
   }
 
   cleanup() {
