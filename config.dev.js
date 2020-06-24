@@ -31,10 +31,10 @@ module.exports = {
     }
   },
   scan: {
-    interval: 8000,
-    concurrentQueryLimit: 30,
-    host: 'http://13.231.179.27:8000',
-    maxInsert: 210
+    interval: 4000,
+    concurrentQueryLimit: 5,
+    host: 'http://192.168.199.205:8000',
+    maxInsert: 20
   },
   wallet: {
     privateKey: 'f6e512a3c259e5f9af981d7f99d245aa5bc52fe448495e0b0dd56e8406be6f71'

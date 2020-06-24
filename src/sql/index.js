@@ -291,8 +291,8 @@ class Query {
       keysStr,
       values
     } = Query.prepareInsertParams(list, keys);
-
-    const sql = `${select} ${tableName} ${keysStr} VALUES ${valuesStr} ON DUPLICATE KEY UPDATE count = count + 1`;
+    // eslint-disable-next-line max-len
+    const sql = `${select} ${tableName} ${keysStr} VALUES ${valuesStr} ON DUPLICATE KEY UPDATE count = count + 1,balance=VALUES(balance)`;
     await this.query(sql, values, connection);
   }
 
