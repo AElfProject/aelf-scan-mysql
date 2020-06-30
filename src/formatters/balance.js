@@ -233,15 +233,13 @@ async function getTokenDecimal(db, symbol) {
     tokenList = tokenList._results;
     TOKEN_DECIMALS = {
       ...TOKEN_DECIMALS,
-      ...tokenList.reduce((acc, t) => {
-        const data = t.toJSON ? t.toJSON() : t;
-        return {
-          ...acc,
-          [data.symbol]: data.decimals
-        };
-      }, {})
+      ...tokenList.reduce((acc, data) => ({
+        ...acc,
+        [data.symbol]: data.decimals
+      }), {})
     };
-  } else if (!TOKEN_DECIMALS[symbol]) {
+  }
+  if (!TOKEN_DECIMALS[symbol]) {
     const {
       decimals: tokenDecimals
     } = await config.token.GetTokenInfo.call({
