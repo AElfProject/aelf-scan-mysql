@@ -77,6 +77,7 @@ async function blockFormatter(block, transactions) {
 function contractTokenFormatter(tokenInfo) {
   return [
     config.contracts.token,
+    config.chainId,
     AElf.utils.chainIdConvertor.chainIdToBase58(tokenInfo.issueChainId),
     'inner',
     tokenInfo.symbol,
@@ -106,7 +107,8 @@ function tokenCreatedFormatter(transaction, chainId) {
   } = Transaction;
   const list = config.token.deserializeLog(Logs, 'TokenCreated').map(l => ({
     contract_address: config.contracts.token,
-    chain_id: AElf.utils.chainIdConvertor.chainIdToBase58(l.issueChainId),
+    issue_chain_id: AElf.utils.chainIdConvertor.chainIdToBase58(l.issueChainId),
+    chain_id: chainId,
     tx_id: TransactionId,
     symbol: l.symbol,
     name: l.tokenName,
@@ -121,6 +123,7 @@ function tokenCreatedFormatter(transaction, chainId) {
   return [
     {
       contract_address: To,
+      issue_chain_id: chainId,
       chain_id: chainId,
       block_hash: BlockHash,
       tx_id: TransactionId,

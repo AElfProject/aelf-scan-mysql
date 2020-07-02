@@ -28,6 +28,7 @@ const TABLE_COLUMNS = {
   CONTRACT: [
     'contract_address',
     'chain_id',
+    'issue_chain_id',
     'tx_id',
     'symbol',
     'name',
