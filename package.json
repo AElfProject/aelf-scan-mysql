@@ -8,7 +8,8 @@
     "start": "cross-env NODE_ENV=production pm2 start src/index.js --name aelf-scan-mysql --exp-backoff-restart-delay=1000 --time",
     "clean": "rimraf ./*.log ",
     "commit": "git-cz",
-    "proto": "node scripts/compile-proto.js"
+    "proto": "node scripts/compile-proto.js",
+    "release": "standard-version"
   },
   "repository": {
     "type": "git",
@@ -33,10 +34,12 @@
     "jest": "^24.8.0",
     "lint-staged": "^9.2.0",
     "lodash": "^4.17.15",
-    "rimraf": "^2.6.3"
+    "rimraf": "^2.6.3",
+    "standard-version": "^8.0.0"
   },
   "dependencies": {
-    "aelf-block-scan": "^0.3.1",
+    "@sentry/node": "^5.19.1",
+    "aelf-block-scan": "^0.4.1",
     "aelf-sdk": "^3.2.34",
     "ali-rds": "^3.3.0",
     "bluebird": "^3.5.5",

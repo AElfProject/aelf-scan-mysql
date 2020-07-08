@@ -5,6 +5,7 @@
 const {
   Scanner
 } = require('aelf-block-scan');
+const Sentry = require('@sentry/node');
 const AElf = require('aelf-sdk');
 const Query = require('./sql/index');
 const DBOperation = require('./dbOperation/index');
@@ -46,6 +47,14 @@ class CustomInsert {
   }
 
   async init() {
+    Sentry.init({
+      dsn: 'https://07cf481c8fdb4dfca9dac54e32aed968@o414245.ingest.sentry.io/5305917',
+      release: `aelf-scan-mysql@${process.env.npm_package_version}`
+    });
+    Sentry.configureScope(scope => {
+      scope.setTag('chainId', config.chainId);
+      scope.setExtra('chainId', config.chainId);
+    });
     // 插入表中
     const tokenInfo = await this.getELFTokenInfo();
     const primaryTokenInfo = await this.getPrimaryTokenInfo(tokenInfo.symbol);
@@ -84,6 +93,10 @@ class CustomInsert {
       console.log('start loop');
     } catch (err) {
       console.error('root catch', err);
+      Sentry.withScope(scope => {
+        scope.addEventProcessor(event => event);
+        Sentry.captureException(err);
+      });
       await sendEmails(err);
       this.cleanup();
     }
