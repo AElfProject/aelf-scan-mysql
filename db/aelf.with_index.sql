@@ -103,6 +103,7 @@ CREATE TABLE `contract_aelf20`
     `contract_address` varchar(64)     NOT NULL,
     `symbol`           varchar(64)     NOT NULL,
     `chain_id`         varchar(64)     NOT NULL,
+    `issue_chain_id`   varchar(64)     NOT NULL,
     `tx_id`            varchar(64)     NOT NULL,
     `name`             varchar(64)     NOT NULL,
     `total_supply`     bigint unsigned NOT NULL,
