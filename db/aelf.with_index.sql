@@ -440,7 +440,7 @@ create TABLE `balance` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `owner` varchar(255) NOT NULL,
   `symbol` varchar(255) NOT NULL DEFAULT 'none',
-  `balance` decimal(64,8) NOT NULL DEFAULT '0.00000000',
+  `balance` decimal(64,12) NOT NULL DEFAULT '0.00000000',
   `count` bigint(20) NOT NULL DEFAULT '0',
   `updated_at` varchar(64) NOT NULL,
   PRIMARY KEY (`id`),

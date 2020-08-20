@@ -8,8 +8,12 @@ const {
   deserializeLogs
 } = require('../common/utils');
 const {
-  config
+  config,
+  TABLE_COLUMNS
 } = require('../common/constants');
+const {
+  contractTokenFormatter
+} = require('./index');
 
 const TOKEN_BALANCE_CHANGED_EVENT = [
   {
@@ -219,6 +223,16 @@ async function getTokenList(sql) {
   return list;
 }
 
+async function addTokenIntoDb(db, tokenInfo) {
+  const keys = TABLE_COLUMNS.CONTRACT;
+  const valuesBlank = `(${keys.map(() => '?').join(',')})`;
+
+  const keysStr = `(${keys.join(',')})`;
+  // eslint-disable-next-line max-len
+  const sql = `insert into contract_aelf20 ${keysStr} VALUES ${valuesBlank} ON DUPLICATE KEY UPDATE contract_address=VALUES(contract_address);`;
+  return db.query(sql, contractTokenFormatter(tokenInfo));
+}
+
 let TOKEN_DECIMALS = {};
 let FETCHING_TOKEN_LIST = false;
 
@@ -240,12 +254,11 @@ async function getTokenDecimal(db, symbol) {
     };
   }
   if (!TOKEN_DECIMALS[symbol]) {
-    const {
-      decimals: tokenDecimals
-    } = await config.token.GetTokenInfo.call({
+    const tokenInfo = await config.token.GetTokenInfo.call({
       symbol
     });
-    TOKEN_DECIMALS[symbol] = tokenDecimals;
+    TOKEN_DECIMALS[symbol] = tokenInfo.decimals;
+    await addTokenIntoDb(db, tokenInfo);
   }
   return TOKEN_DECIMALS[symbol];
 }
