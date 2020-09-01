@@ -4,6 +4,7 @@
  * @date 2019-07-23
  */
 const AElf = require('aelf-sdk');
+const lodash = require('lodash');
 const deserializeEvents = require('../deserialize/deserializeEvents');
 const {
   deserializeCrossChainTransferInput
@@ -337,11 +338,10 @@ async function symbolEventFormatter(transaction) {
     return [];
   }
   const results = await Promise.all(SYMBOL_EVENTS.map(name => deserializeLogs(logs, name)));
-  return results.reduce((acc, v) => ([...acc, ...v.map(w => ({
-    event: w.name,
+  return lodash.uniqBy(results.reduce((acc, v) => ([...acc, ...v.map(w => ({
     symbol: w.deserializeLogResult.symbol || w.deserializeLogResult.tokenSymbol,
     tx_id: TransactionId
-  }))]), []);
+  }))]), []), item => `${item.symbol}-${item.tx_id}`);
 }
 
 module.exports = {

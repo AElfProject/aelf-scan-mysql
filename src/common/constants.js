@@ -174,7 +174,6 @@ const TABLE_COLUMNS = {
   ],
   TOKEN_TX: [
     'tx_id',
-    'event',
     'symbol'
   ],
   BALANCE: [
