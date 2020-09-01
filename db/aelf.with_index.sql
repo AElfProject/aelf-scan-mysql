@@ -414,7 +414,6 @@ CREATE TABLE `token_tx`
 (
     `id`     bigint(20) unsigned NOT NULL AUTO_INCREMENT,
     `tx_id`  varchar(64)         NOT NULL,
-    `event`  varchar(255)        NOT NULL,
     `symbol` varchar(255)        NOT NULL,
     PRIMARY KEY (`id`),
     KEY `symbol` (`symbol`) USING BTREE,

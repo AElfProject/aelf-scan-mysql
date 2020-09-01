@@ -139,7 +139,8 @@ const SYMBOL_EVENTS = [
   'UnApproved',
   'ChainPrimaryTokenSymbolSet',
   'TokenSold',
-  'TokenBought'
+  'TokenBought',
+  'Transferred'
 ];
 
 function isSymbolEvent(transaction) {
