@@ -15,7 +15,7 @@ function deserializeCrossChainTransferInput(base64Str) {
   let result = {};
   try {
     const transactionDecoded = AElf.pbUtils.Transaction.decode(Buffer.from(base64Str, 'base64'));
-    const crossChainTransferInput = tokenContractRoot.nested.token.CrossChainTransferInput;
+    const crossChainTransferInput = tokenContractRoot.lookupType('CrossChainTransferInput');
     const crossChainTransferInputDecoded = crossChainTransferInput.decode(transactionDecoded.params);
     result = crossChainTransferInput.toObject(crossChainTransferInputDecoded, {
       enums: String, // enums as string names

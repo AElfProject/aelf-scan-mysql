@@ -24,7 +24,7 @@ function deserializeEvents(logs = []) {
       if (NonIndexed) {
         serializedData.push(NonIndexed);
       }
-      const dataType = tokenConverterContractRoot[Name];
+      const dataType = tokenConverterContractRoot.lookupType(Name);
       let deserializeLogResult = serializedData.reduce((acc, v) => {
         let deserialize = dataType.decode(Buffer.from(v, 'base64'));
         deserialize = dataType.toObject(deserialize, {
