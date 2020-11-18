@@ -4,6 +4,7 @@
  * @date 2019-07-30
  */
 const mysql = require('mysql');
+const AElf = require('aelf-sdk');
 const redis = require('redis');
 const bluebird = require('bluebird');
 const Counter = require('../redis/index');
@@ -12,7 +13,8 @@ const {
   isResourceTransaction,
   isTokenCreatedTransaction,
   isTokenRelatedTransaction,
-  isSymbolEvent
+  isSymbolEvent,
+  deserializeLogs
 } = require('../common/utils');
 const {
   blockFormatter,
@@ -54,6 +56,18 @@ function flatMapEvents(transactions) {
       })
     }))];
   }, []);
+}
+
+const VOTE_EVENT_NAME = 'CandidatePubkeyReplaced';
+
+function flatMapVoteEvents(transactions) {
+  const logs = transactions.reduce((acc, transaction) => {
+    const {
+      Logs = []
+    } = transaction;
+    return [...acc, ...Logs];
+  }, []);
+  return deserializeLogs(logs, VOTE_EVENT_NAME);
 }
 
 class Query {
@@ -279,6 +293,34 @@ class Query {
     await this.query(sql, values, connection);
   }
 
+  async insertVoteEvents(list = [], isConfirmed = true, connection) {
+    if (list.length === 0 || !isConfirmed) {
+      return;
+    }
+    const events = list.map(v => {
+      const {
+        deserializeLogResult
+      } = v;
+      const {
+        oldPubkey,
+        newPubkey
+      } = deserializeLogResult;
+      const oldAddress = AElf.wallet.getAddressFromPubKey(AElf.wallet.ellipticEc.keyFromPublic(oldPubkey, 'hex').pub);
+      const newAddress = AElf.wallet.getAddressFromPubKey(AElf.wallet.ellipticEc.keyFromPublic(newPubkey, 'hex').pub);
+      return {
+        oldPubkey,
+        oldAddress,
+        newAddress,
+        newPubkey
+      };
+    });
+    const tableName = 'vote_teams';
+    const select = 'update';
+
+    const sql = `${select} ${tableName} set public_key=?, address=? WHERE address=?`;
+    await Promise.all(events.map(v => this.query(sql, [v.newPubkey, v.newAddress, v.oldAddress], connection)));
+  }
+
   async insertBalance(list = [], isConfirmed = true, connection) {
     if (list.length === 0 || !isConfirmed) {
       return;
@@ -385,6 +427,10 @@ class Query {
       .map(t => flatMapEvents(t))
       .reduce((acc, v) => [...acc, ...v], []);
 
+    const voteEvents = (await Promise.all(transactions
+      .map(t => flatMapVoteEvents(t))))
+      .reduce((acc, v) => [...acc, ...v], []);
+
     const balances = isConfirmed ? (await Promise.all(transactions
       .reduce((acc, v, i) => [
         ...acc,
@@ -431,6 +477,7 @@ class Query {
         this.insertBlocks(formattedBlocks, isConfirmed, connection),
         this.insertTransactions(formattedTransactions, isConfirmed, connection),
         this.insertEvents(events, isConfirmed, connection),
+        this.insertVoteEvents(voteEvents, isConfirmed, connection),
         this.insertResourceTransactions(resourceTransactions, isConfirmed, connection),
         this.insertTokenCreatedTransactions(tokenCreatedTransactions, isConfirmed, connection),
         this.insertTokenRelatedTransactions(tokenRelatedTransactions, isConfirmed, connection),
