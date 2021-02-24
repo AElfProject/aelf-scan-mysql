@@ -5,6 +5,7 @@
  */
 
 module.exports = {
+  // 数据库信息
   sql: {
     host: '127.0.0.1',
     port: '3306',
@@ -13,11 +14,14 @@ module.exports = {
     database: 'aelf_main_chain',
     connectionLimit: 100
   },
+  // redis用于存储一些统计类信息，目前包括总交易量，总区块数等
   redis: {
+    // redis链接信息
     connection: {
       host: '127.0.0.1',
       port: 6379
     },
+    // 不需要修改
     keys: {
       blocksCount: 'blocks_count',
       blocksUnconfirmedCount: 'blocks_unconfirmed_count',
@@ -30,10 +34,12 @@ module.exports = {
       bestHeight: 'best_height'
     }
   },
+  // 扫链的相关配置，具体配置项查看aelf-block-scan的文档
   scan: {
     interval: 4000,
     concurrentQueryLimit: 5,
-    host: 'http://192.168.199.205:8000',
+    // 节点的地址
+    host: 'http://192.168.199.109:8002',
     maxInsert: 20
   },
   wallet: {
@@ -45,6 +51,7 @@ module.exports = {
     resource: 'AElf.ContractNames.TokenConverter',
     tokenConverter: 'AElf.ContractNames.TokenConverter'
   },
+  // 已废弃
   tps: {
     minutes: 1, // minute
     interval: 60, // s, 秒
@@ -55,7 +62,9 @@ module.exports = {
     maxQuery: 20,
     maxInsert: 200
   },
+  // aelf-block-api的地址，用于初始化
   blockApi: 'http://127.0.0.1:7101',
+  // 报错重启时的邮件发送
   mails: {
     sendmailPath: '/usr/sbin/sendmail',
     user: 'aelf.scan@aelf.io', // generated ethereal user
