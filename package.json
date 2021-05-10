@@ -33,7 +33,7 @@
     "husky": "^3.0.2",
     "jest": "^24.8.0",
     "lint-staged": "^9.2.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "rimraf": "^2.6.3",
     "standard-version": "^8.0.0"
   },
@@ -45,7 +45,7 @@
     "bluebird": "^3.5.5",
     "cross-env": "^5.2.0",
     "decimal.js": "^10.2.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "log4js": "^4.5.1",
     "long": "^4.0.0",
     "moment": "^2.24.0",
