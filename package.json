@@ -40,7 +40,7 @@
   "dependencies": {
     "@sentry/node": "^5.19.1",
     "aelf-block-scan": "^0.4.1",
-    "aelf-sdk": "^3.2.34",
+    "aelf-sdk": "^3.2.40",
     "ali-rds": "^3.3.0",
     "bluebird": "^3.5.5",
     "cross-env": "^5.2.0",
