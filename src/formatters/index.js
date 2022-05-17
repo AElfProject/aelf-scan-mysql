@@ -115,7 +115,7 @@ function tokenCreatedFormatter(transaction, chainId) {
     name: l.tokenName,
     total_supply: l.totalSupply,
     supply: 0,
-    decimals: l.decimals
+    decimals: l.decimals || 0
   }));
   if (list.length > 0) {
     return list;
@@ -132,7 +132,7 @@ function tokenCreatedFormatter(transaction, chainId) {
       name: params.tokenName,
       total_supply: params.totalSupply,
       supply: 0,
-      decimals: params.decimals
+      decimals: params.decimals || 0
     }
   ];
 }

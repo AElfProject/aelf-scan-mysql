@@ -88,7 +88,7 @@ async function getDecimal(symbol) {
     });
     TOKEN_DECIMALS[symbol] = decimals;
   }
-  return TOKEN_DECIMALS[symbol] || 8;
+  return TOKEN_DECIMALS[symbol] || 0;
 }
 
 async function getFee(transaction) {
@@ -99,14 +99,14 @@ async function getFee(transaction) {
   return {
     fee: fee.map((v, i) => ({
       ...v,
-      amount: new Decimal(v.amount).dividedBy(`1e${feeDecimals[i] || 8}`).toNumber()
+      amount: new Decimal(v.amount).dividedBy(`1e${feeDecimals[i] || 0}`).toNumber()
     })).reduce((acc, v) => ({
       ...acc,
       [v.symbol]: v.amount
     }), {}),
     resources: resourceFees.map((v, i) => ({
       ...v,
-      amount: new Decimal(v.amount).dividedBy(`1e${resourceDecimals[i] || 8}`).toNumber()
+      amount: new Decimal(v.amount).dividedBy(`1e${resourceDecimals[i] || 0}`).toNumber()
     })).reduce((acc, v) => ({
       ...acc,
       [v.symbol]: v.amount
@@ -122,7 +122,7 @@ async function getDividend(height) {
   const decimals = await Promise.all(Object.keys(dividends).map(getDecimal));
   return Object.keys(dividends).reduce((acc, v, i) => ({
     ...acc,
-    [v]: +dividends[v] / `1e${decimals[i]}`
+    [v]: +dividends[v] / `1e${decimals[i] || 0}`
   }), {});
 }
 
