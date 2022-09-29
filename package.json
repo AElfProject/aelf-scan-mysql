@@ -1,6 +1,6 @@
 {
   "name": "aelf-scan-mysql",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "a mysql extension for scan",
   "main": "src/index.js",
   "scripts": {
@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@sentry/node": "^5.19.1",
-    "aelf-block-scan": "^0.4.1",
+    "aelf-block-scan": "^0.4.2",
     "aelf-sdk": "^3.2.40",
     "ali-rds": "^3.3.0",
     "bluebird": "^3.5.5",
