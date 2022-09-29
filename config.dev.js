@@ -66,10 +66,20 @@ module.exports = {
   blockApi: 'http://127.0.0.1:7101',
   // 报错重启时的邮件发送
   mails: {
+    type: 'smtp', // smtp | sendmail
     sendmailPath: '/usr/sbin/sendmail',
-    user: 'aelf.scan@aelf.io', // generated ethereal user
+    user: 'scan@domain.io', // generated ethereal user
     from: 'AElf scan <aelf.scan@aelf.io>',
     to: ['test@mail.com'],
-    subject: 'error happened when scanning'
+    subject: 'error happened when scanning', // mail subject
+    smtpConfig: {
+      host: "smtp.domain.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: "monitor@domain.com",
+        pass: "password",
+      }
+    }
   }
 };
