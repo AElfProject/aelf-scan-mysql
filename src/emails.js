@@ -11,17 +11,24 @@ const mailConfig = config.mails;
 
 async function sendEmails(message = '') {
   const {
+    type,
     from,
     to,
     subject,
-    sendmailPath
+    sendmailPath,
+    smtpConfig
   } = mailConfig;
   try {
-    const transporter = nodemailer.createTransport({
-      sendmail: true,
-      newline: 'unix',
-      path: sendmailPath
-    });
+    let transporter;
+    if (type === 'smtp') {
+      transporter = nodemailer.createTransport(smtpConfig);
+    } else {
+      transporter = nodemailer.createTransport({
+        sendmail: true,
+        newline: 'unix',
+        path: sendmailPath
+      });
+    }
 
     // send mail with defined transport object
     const info = await transporter.sendMail({
