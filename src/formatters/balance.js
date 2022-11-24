@@ -178,8 +178,17 @@ const TOKEN_BALANCE_CHANGED_EVENT = [
 
 function filterBalanceChangedTransaction(transaction) {
   const {
-    Bloom
+    Bloom,
+    Transaction,
   } = transaction;
+  const {
+    To
+  } = Transaction;
+  // Check if it is a multiToken's Transfer. If not, drop it.
+  if (To.toLowerCase() !== config.token.address.toLowerCase()) {
+    console.log('Not a multiToken Transfer, drop it', To);
+    return false;
+  }
   return !!Bloom && TOKEN_BALANCE_CHANGED_EVENT.map(event => {
     const {
       filterText
