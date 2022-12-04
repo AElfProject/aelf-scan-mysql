@@ -773,19 +773,19 @@ add-stream@^1.0.0:
   resolved "https://registry.yarnpkg.com/add-stream/-/add-stream-1.0.0.tgz#6a7990437ca736d5e1288db92bd3266d5f5cb2aa"
   integrity sha1-anmQQ3ynNtXhKI25K9MmbV9csqo=
 
-aelf-block-scan@^0.4.1:
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/aelf-block-scan/-/aelf-block-scan-0.4.1.tgz#c229e3cbd7a8cdae071dccca30645a6f23f0ddae"
-  integrity sha512-seHCI0gNzMzVHX3o1xdz0wrzg8cVd+z0MipQ6aywXO3wmIqsLoXFKI4HDMHm2CVlYGXP06SNAG6f/EZmDnvS+w==
+aelf-block-scan@^0.4.2:
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/aelf-block-scan/-/aelf-block-scan-0.4.2.tgz#51032451d0defb5157f813bb06c48b8bad19e216"
+  integrity sha512-sbEw3v6P83DqjbRnEOn38evn1AU9hbOCTLS//lXUkCHGtZiDXwFvcxkSh5rhOvWI08Z9rZ+Rxc5bSmRMwW/sRQ==
   dependencies:
-    aelf-sdk "^3.2.29"
+    aelf-sdk "^3.2.40"
     cross-env "^5.2.0"
     log4js "^3.0.5"
 
-aelf-sdk@^3.2.29, aelf-sdk@^3.2.34:
-  version "3.2.34"
-  resolved "https://registry.yarnpkg.com/aelf-sdk/-/aelf-sdk-3.2.34.tgz#842c9d58ff6d5e5663654af5d0331d93683d8c16"
-  integrity sha512-4PhuPw9kZHZvlQFiGVEZjrLLnb4ImxidZTBv/bgyogeWCZNpRvs2jXv/hhrIE0jx/BMHmGQuW7enIBK7P533zg==
+aelf-sdk@^3.2.40:
+  version "3.2.41"
+  resolved "https://registry.yarnpkg.com/aelf-sdk/-/aelf-sdk-3.2.41.tgz#6e2df4cd57e884a7c06b1cc1fa73634e7306e3cd"
+  integrity sha512-1Iq/wTNRUMYMgptzxNgWVFq9MJAYBkX/Q+XU+emZIpx8gqAE+fN3ph1FnWEMjnzkg47HAKwXmXYYmc95kWMAAw==
   dependencies:
     "@aelfqueen/protobufjs" "^6.8.9"
     "@babel/runtime" "^7.4.5"
@@ -2186,9 +2186,9 @@ decimal.js@^10.2.0:
   integrity sha512-vDPw+rDgn3bZe1+F/pyEwb1oMG2XTlRVgAa6B4KccTEpYgF8w6eQllVbQcfIJnZyvzFtFpxnpGtx8dd7DJp/Rw==
 
 decode-uri-component@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/decode-uri-component/-/decode-uri-component-0.2.0.tgz#eb3913333458775cb84cd1a1fae062106bb87545"
-  integrity sha1-6zkTMzRYd1y4TNGh+uBiEGu4dUU=
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/decode-uri-component/-/decode-uri-component-0.2.2.tgz#e69dbe25d37941171dd540e024c444cd5188e1e9"
+  integrity sha512-FqUYQ+8o158GyGTrMFJms9qh3CqTKvAqgqsTnkLI8sKu0028orqBhxNMFkFen0zGyg6epACD32pjVk58ngIErQ==
 
 dedent@0.7.0, dedent@^0.7.0:
   version "0.7.0"
@@ -5246,10 +5246,10 @@ node-pre-gyp@^0.12.0:
     semver "^5.3.0"
     tar "^4"
 
-nodemailer@^6.3.0:
-  version "6.4.0"
-  resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-6.4.0.tgz#91482ebc09d39156d933eb9e6159642cd27bf02c"
-  integrity sha512-UBqPOfQGD1cM3HnjhuQe+0u3DWx47WWK7lBjG5UtPnGOysr7oDK5lNCzcjK6zzeBSdTk4m1tGx1xNbWFZQmMNA==
+nodemailer@^6.8.0:
+  version "6.8.0"
+  resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-6.8.0.tgz#804bcc5256ee5523bc914506ee59f8de8f0b1cd5"
+  integrity sha512-EjYvSmHzekz6VNkNd12aUqAco+bOkRe3Of5jVhltqKhEsjw/y0PYPJfp83+s9Wzh1dspYAkUW/YNQ350NATbSQ==
 
 nopt@^4.0.1:
   version "4.0.1"
