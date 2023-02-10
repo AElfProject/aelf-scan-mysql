@@ -339,9 +339,10 @@ class Query {
   }
 
   async insertTokenTx(txs = [], isConfirmed = true, connection) {
-    if (txs.length === 0 || !isConfirmed) {
+    if (txs.length === 0) {
       return;
     }
+
     const keys = TABLE_COLUMNS.TOKEN_TX;
     const tableName = TABLE_NAME.TOKEN_TX;
     const select = 'insert into';
@@ -350,6 +351,12 @@ class Query {
       keysStr,
       values
     } = Query.prepareInsertParams(txs, keys);
+    const querySql = `select * from ${tableName} where tx_id="${values[0]}" and symbol="${values[1]}"`;
+    const queryResult = await this.query(querySql, [], connection);
+
+    if (queryResult.length) {
+      return;
+    }
 
     const sql = `${select} ${tableName} ${keysStr} VALUES ${valuesStr}`;
     await this.query(sql, values, connection);
