@@ -179,21 +179,14 @@ const TOKEN_BALANCE_CHANGED_EVENT = [
 function filterBalanceChangedTransaction(transaction) {
   const {
     Bloom,
-    Transaction,
   } = transaction;
-  const {
-    To
-  } = Transaction;
-  // Check if it is a multiToken's Transfer. If not, drop it.
-  if (To.toLowerCase() !== config.token.address.toLowerCase()) {
-    console.log('Not a multiToken Transfer, drop it', To);
-    return false;
-  }
+
   return !!Bloom && TOKEN_BALANCE_CHANGED_EVENT.map(event => {
     const {
       filterText
     } = event;
-    return AElf.utils.isEventInBloom(Bloom, filterText);
+    return AElf.utils.isEventInBloom(Bloom, filterText)
+      && AElf.utils.isAddressInBloom(Bloom, config.token.address);
   }).filter(v => v === true).length > 0;
 }
 
@@ -288,7 +281,7 @@ async function tokenBalanceChangedFormatter(transaction, type, db) {
     .reduce((acc, v) => [...acc, ...v], [])
     .reduce((acc, v) => [...acc, ...v], []);
   // 用来排除非法的Token名称或者用户自定义的Token名称
-  addressSymbols = addressSymbols.filter(v => v.symbol.match(/^[a-z0-9]+$/i));
+  addressSymbols = addressSymbols.filter(v => v.symbol.match(/^[a-z0-9]+[-]*[a-z0-9]+$/i));
   addressSymbols = lodash.uniq(addressSymbols.map(v => `${v.owner}_${v.symbol}`));
   const balancesFromCache = addressSymbols
     .filter(v => type !== QUERY_TYPE.LOOP && BALANCES_NOT_IN_LOOP[v] !== undefined)
