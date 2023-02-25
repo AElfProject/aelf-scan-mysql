@@ -102,7 +102,7 @@ async function getFee(transaction) {
       amount: new Decimal(v.amount).dividedBy(`1e${feeDecimals[i] || 0}`).toNumber()
     })).reduce((acc, v) => ({
       ...acc,
-      [v.symbol]: v.amount
+      [v.symbol]: v.amount + (acc[v.symbol] || 0)
     }), {}),
     resources: resourceFees.map((v, i) => ({
       ...v,
