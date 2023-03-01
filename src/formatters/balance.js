@@ -262,12 +262,17 @@ async function getTokenDecimal(db, symbol) {
     TOKEN_DECIMALS[symbol] = tokenInfo.decimals;
     await addTokenIntoDb(db, tokenInfo);
   }
+
+  if (!/^\d+$/.test(TOKEN_DECIMALS[symbol])) {
+    const errorMsg = `Can not find the TOKEN_DECIMALS of ${symbol}`;
+    throw Error(errorMsg);
+  }
   return TOKEN_DECIMALS[symbol];
 }
 
 async function calculateBalances(db, symbol, balance) {
   const decimal = await getTokenDecimal(db, symbol);
-  return new Decimal(balance).dividedBy(`1e${decimal || 8}`).toString();
+  return new Decimal(balance).dividedBy(`1e${decimal}`).toString();
 }
 
 let BALANCES_NOT_IN_LOOP = {};
