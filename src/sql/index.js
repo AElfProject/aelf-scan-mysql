@@ -322,7 +322,8 @@ class Query {
   }
 
   async insertBalance(list = [], isConfirmed = true, connection) {
-    if (list.length === 0 || !isConfirmed) {
+    console.log('insertBalance, list', list, isConfirmed);
+    if (list.length === 0) {
       return;
     }
     const keys = TABLE_COLUMNS.BALANCE;
@@ -335,9 +336,11 @@ class Query {
     } = Query.prepareInsertParams(list, keys);
     // eslint-disable-next-line max-len
     const sql = `${select} ${tableName} ${keysStr} VALUES ${valuesStr} ON DUPLICATE KEY UPDATE count = count + 1,balance=VALUES(balance)`;
+    // console.log('insertBalance, sql', sql, values);
     await this.query(sql, values, connection);
   }
 
+  // eslint-disable-next-line no-unused-vars
   async insertTokenTx(txs = [], isConfirmed = true, connection) {
     if (txs.length === 0) {
       return;
