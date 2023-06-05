@@ -236,9 +236,11 @@ function getContractAddress(contracts) {
   config.portkey = aelf.chain.contractAt(contractAddress.portkey, wallet, {
     sync: true
   });
-  config.resource = aelf.chain.contractAt(contractAddress.resource, wallet, {
-    sync: true
-  });
+  if (contractAddress.resource) {
+    config.resource = aelf.chain.contractAt(contractAddress.resource, wallet, {
+      sync: true
+    });
+  }
   config.symbol = (config.token.GetNativeTokenInfo.call({
     sync: true
   })).symbol || 'ELF';
