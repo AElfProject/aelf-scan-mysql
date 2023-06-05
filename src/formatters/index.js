@@ -13,7 +13,9 @@ const { config } = require('../common/constants');
 const {
   getDividend,
   SYMBOL_EVENTS,
-  deserializeLogs
+  deserializeLogs,
+  parseParams,
+  stringifyParams
 } = require('../common/utils');
 
 async function blockFormatter(block, transactions) {
@@ -137,20 +139,43 @@ function tokenCreatedFormatter(transaction, chainId) {
   ];
 }
 
-function resourceFormatter(transaction, block) {
+async function resourceFormatterCaAccountCallFilterFormatter({
+  From, To, MethodName, Params
+}) {
+  const isCaCall = To === config.contracts.portkey && MethodName === 'ManagerForwardCall';
+  if (isCaCall) {
+    const paramsOfCaCall = parseParams(Params);
+    const { caHash, methodName, args } = paramsOfCaCall;
+    const isCaCallOfResource = ['Buy', 'Sell'].includes(methodName);
+    if (isCaCallOfResource) {
+      const holderInfo = await config.portkey.GetHolderInfo.call({
+        caHash
+      });
+      const params = await config.resource[methodName]
+        .unpackPackedInput(Buffer.from(args, 'base64'));
+      return {
+        From: holderInfo.caAddress,
+        MethodName: methodName,
+        Params: stringifyParams(params)
+      };
+    }
+  }
+  return {
+    From,
+    MethodName,
+    Params: parseParams(Params)
+  };
+}
+
+async function resourceFormatter(transaction, block) {
   const {
     Logs = [],
     Status,
     Transaction,
     TransactionId
   } = transaction;
-  const { From, MethodName } = Transaction;
-  let params;
-  try {
-    params = JSON.parse(Transaction.Params);
-  } catch (e) {
-    params = {};
-  }
+  const { From, MethodName, Params: params } = await resourceFormatterCaAccountCallFilterFormatter(Transaction);
+  console.log('resourceFormatterCaAccountCallFilterFormatter:', From, MethodName, params);
   if (Status.toUpperCase() !== 'MINED') {
     return [
       {
