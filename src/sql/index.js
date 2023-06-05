@@ -454,12 +454,12 @@ class Query {
       .filter(isSymbolEvent)
       .map(v => symbolEventFormatter(v))).then(res => res.reduce((acc, v) => [...acc, ...v], []));
 
-    const resourceTransactions = transactions
-      .map((v = [], i) => v
+    const resourceTransactions = await Promise.all(transactions
+      .map(async (v = [], i) => Promise.all(v
         .filter(isResourceTransaction)
-        .map(resource => resourceFormatter(resource, formattedBlocks[i]))
-        .reduce((acc, r) => [...acc, ...r], []))
-      .reduce((acc, i) => acc.concat(i), []);
+        .map(resource => resourceFormatter(resource, formattedBlocks[i])))
+        .then(res => res.reduce((acc, r) => [...acc, ...r], []))))
+      .then(res => res.reduce((acc, i) => acc.concat(i), []));
 
     const tokenCreatedTransactions = transactions
       .map((v = []) => v
