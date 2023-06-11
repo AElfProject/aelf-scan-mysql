@@ -25,12 +25,9 @@ function isResourceTransaction(transaction) {
   }
   const {
     Logs,
-    Transaction
   } = transaction;
-  const { To, MethodName } = Transaction;
-  return (
-    To === config.contracts.resource && (MethodName === 'Buy' || MethodName === 'Sell')
-    || (Logs || []).filter(v => v.Name === 'TokenBought' || v.Name === 'TokenSold').length > 0);
+  return (Logs || []).filter(v => (v.Name === 'TokenBought' || v.Name === 'TokenSold')
+    && v.Address === config.contracts.resource).length > 0;
 }
 
 function isOldTokenCreatedTransaction(transaction) {
@@ -219,6 +216,21 @@ function formatTime(time) {
   return moment(time).utcOffset(0).format('YYYY-MM-DD HH:mm:ss');
 }
 
+function stringifyParams(params) {
+  if (typeof params === 'string') {
+    return params;
+  }
+  return JSON.stringify(params);
+}
+
+function parseParams(params) {
+  try {
+    return JSON.parse(params);
+  } catch (e) {
+    return params;
+  }
+}
+
 module.exports = {
   isProd,
   isResourceTransaction,
@@ -230,5 +242,7 @@ module.exports = {
   deserializeLogs,
   formatTime,
   getFee,
-  getDividend
+  getDividend,
+  parseParams,
+  stringifyParams
 };

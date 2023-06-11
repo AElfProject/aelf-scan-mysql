@@ -221,14 +221,26 @@ function getContractAddress(contracts) {
   });
 
   Object.entries(contracts).forEach(([key, value]) => {
-    contractAddress[key] = genContract.GetContractAddressByName.call(AElf.utils.sha256(value), {
-      sync: true
-    });
+    if (key === 'portkey') {
+      contractAddress[key] = value;
+    } else {
+      contractAddress[key] = genContract.GetContractAddressByName.call(AElf.utils.sha256(value), {
+        sync: true
+      });
+    }
   });
   console.log(contractAddress);
   config.token = aelf.chain.contractAt(contractAddress.token, wallet, {
     sync: true
   });
+  config.portkey = aelf.chain.contractAt(contractAddress.portkey, wallet, {
+    sync: true
+  });
+  if (contractAddress.resource) {
+    config.resource = aelf.chain.contractAt(contractAddress.resource, wallet, {
+      sync: true
+    });
+  }
   config.symbol = (config.token.GetNativeTokenInfo.call({
     sync: true
   })).symbol || 'ELF';
