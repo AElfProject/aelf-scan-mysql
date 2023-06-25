@@ -191,9 +191,10 @@ function filterBalanceChangedTransaction(transaction) {
 }
 
 function deserializeTransferredLogs(transaction, filters) {
-  const {
+  let {
     Logs = []
   } = transaction;
+  Logs = Logs.filter(l => l.Address === config.token.address);
   return Promise.all(
     filters
       .map(f => {

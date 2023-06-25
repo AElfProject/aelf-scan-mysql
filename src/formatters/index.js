@@ -358,7 +358,10 @@ async function symbolEventFormatter(transaction) {
     TransactionId,
     Logs = []
   } = transaction;
-  const logs = (Logs || []).filter(v => SYMBOL_EVENTS.includes(v.Name));
+  const logs = (Logs || []).filter(({ Address, Name }) => SYMBOL_EVENTS.includes(Name) && (
+    Address === config.contracts.token
+    || Address === config.contracts.tokenConverter
+    || Address === config.contracts.crossChain));
   if (logs.length === 0) {
     return [];
   }
