@@ -136,18 +136,14 @@ const TOKEN_BALANCE_CHANGED_EVENT = [
   },
   {
     filterText: 'TransactionFeeCharged',
-    formatter(eventResult, transaction) {
+    formatter(eventResult) {
       const {
-        Transaction: {
-          From
-        }
-      } = transaction;
-      const {
-        symbol
+        symbol,
+        chargingAddress
       } = eventResult;
       return [
         {
-          owner: From,
+          owner: chargingAddress,
           symbol,
           action: 'TransactionFeeCharged'
         }
