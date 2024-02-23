@@ -49,7 +49,15 @@ module.exports = {
     // Token合约可以通过getContractAddressByName来获取
     token: 'AElf.ContractNames.Token',
     resource: 'AElf.ContractNames.TokenConverter',
-    tokenConverter: 'AElf.ContractNames.TokenConverter'
+    tokenConverter: 'AElf.ContractNames.TokenConverter',
+    portkeyVersions: {
+      portkey: 'iupiTuL2cshxB9UNauXNXe9iyCcqka7jCotodcEHGpNXeLzqG', // testnet
+      portkeyV2: '238X6iw1j8YKcHvkDYVtYVbuYk2gJnK8UoNpVCtssynSpVC8hb' // testnet
+    },
+  },
+  contractsPortkeyVersions: {
+    portkey: 'iupiTuL2cshxB9UNauXNXe9iyCcqka7jCotodcEHGpNXeLzqG', // testnet
+    portkeyV2: '238X6iw1j8YKcHvkDYVtYVbuYk2gJnK8UoNpVCtssynSpVC8hb' // testnet
   },
   // 已废弃
   tps: {
@@ -73,12 +81,12 @@ module.exports = {
     to: ['test@mail.com'],
     subject: 'error happened when scanning', // mail subject
     smtpConfig: {
-      host: "smtp.domain.com",
+      host: 'tp.domain.com',
       port: 465,
       secure: true,
       auth: {
-        user: "monitor@domain.com",
-        pass: "password",
+        user: 'monitor@domain.com',
+        pass: 'password',
       }
     }
   }

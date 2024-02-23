@@ -142,13 +142,20 @@ function tokenCreatedFormatter(transaction, chainId) {
 async function resourceFormatterCaAccountCallFilterFormatter({
   From, To, MethodName, Params
 }) {
-  const isCaCall = To === config.contracts.portkey && MethodName === 'ManagerForwardCall';
+  const portkeyContractsAddresses = Object.values(config.contractsPortkeyVersions);
+  const portkeyContractsKeyPair = Object.entries(config.contractsPortkeyVersions);
+  const portkeySelectedIndex = portkeyContractsAddresses.findIndex(value => To === value);
+  console.log('portkeySelectedIndex: ', portkeySelectedIndex);
+  const isPortkey = portkeySelectedIndex !== -1;
+  const isCaCall = isPortkey && MethodName === 'ManagerForwardCall';
+
   if (isCaCall) {
     const paramsOfCaCall = parseParams(Params);
     const { caHash, methodName, args } = paramsOfCaCall;
     const isCaCallOfResource = ['Buy', 'Sell'].includes(methodName);
     if (isCaCallOfResource) {
-      const holderInfo = await config.portkey.GetHolderInfo.call({
+      const portkeyContract = config[`${portkeyContractsKeyPair[portkeySelectedIndex][0]}`];
+      const holderInfo = await portkeyContract.GetHolderInfo.call({
         caHash
       });
       const params = await config.resource[methodName]

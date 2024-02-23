@@ -221,8 +221,10 @@ function getContractAddress(contracts) {
   });
 
   Object.entries(contracts).forEach(([key, value]) => {
-    if (key === 'portkey') {
-      contractAddress[key] = value;
+    if (key === 'portkeyVersions') {
+      Object.entries(value).forEach(([innerKey, innerValue]) => {
+        contractAddress[innerKey] = innerValue;
+      });
     } else {
       contractAddress[key] = genContract.GetContractAddressByName.call(AElf.utils.sha256(value), {
         sync: true
@@ -233,9 +235,13 @@ function getContractAddress(contracts) {
   config.token = aelf.chain.contractAt(contractAddress.token, wallet, {
     sync: true
   });
-  config.portkey = aelf.chain.contractAt(contractAddress.portkey, wallet, {
-    sync: true
+  Object.entries(contracts.portkeyVersions).forEach(([key, address]) => {
+    config[key] = aelf.chain.contractAt(address, wallet, {
+      sync: true
+    });
+    console.log('portkeyVersions', key, address);
   });
+
   if (contractAddress.resource) {
     config.resource = aelf.chain.contractAt(contractAddress.resource, wallet, {
       sync: true
